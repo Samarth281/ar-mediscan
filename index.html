@@ -16,12 +16,12 @@
     --accent3: #ff6b35;
     --text: #ddeef8;
     --muted: #5a8aaa;
-    --heading: #ffffff;
     --danger: #ff4466;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
 
+  /* SPLASH */
   #splash {
     position:fixed; inset:0; background:var(--bg);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -42,7 +42,7 @@
     position:relative; z-index:1;
   }
   .splash-sub { font-size:12px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; margin-top:6px; position:relative; z-index:1; }
-  .splash-feats { display:flex; gap:22px; margin-top:26px; position:relative; z-index:1; }
+  .splash-feats { display:flex; gap:18px; margin-top:26px; position:relative; z-index:1; flex-wrap:wrap; justify-content:center; }
   .splash-feat { text-align:center; font-size:10px; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:5px; }
   .splash-feat span { font-size:22px; }
   .splash-btn {
@@ -54,9 +54,11 @@
   }
   .splash-btn:hover { background:rgba(0,212,255,0.2); box-shadow:0 0 30px rgba(0,212,255,0.2); }
 
+  /* APP */
   #app { display:none; flex-direction:column; min-height:100vh; }
   #app.visible { display:flex; }
 
+  /* HEADER */
   .hdr {
     padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
     border-bottom:1px solid var(--border); background:rgba(8,24,40,0.97);
@@ -81,10 +83,24 @@
   .dot.err     { background:var(--danger);  box-shadow:0 0 6px var(--danger); }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .cam-wrap { position:relative; background:#000; overflow:hidden; flex-shrink:0; }
-  #video { width:100%; display:block; object-fit:cover; max-height:62vh; min-height:200px; }
+  /* MODE TABS */
+  .mode-tabs {
+    display:flex; background:var(--surface); border-bottom:1px solid var(--border);
+  }
+  .mtab {
+    flex:1; padding:10px 8px; display:flex; align-items:center; justify-content:center;
+    gap:6px; font-family:'Space Mono',monospace; font-size:9px; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent;
+    transition:all 0.2s;
+  }
+  .mtab.active { color:var(--accent); border-bottom-color:var(--accent); background:rgba(0,212,255,0.04); }
+  .mtab-icon { font-size:14px; }
 
-  /* Camera permission prompt overlay */
+  /* CAMERA PANEL */
+  #camPanel { display:block; }
+  .cam-wrap { position:relative; background:#000; overflow:hidden; flex-shrink:0; }
+  #video { width:100%; display:block; object-fit:cover; max-height:58vh; min-height:200px; }
+
   #camPrompt {
     position:absolute; inset:0; background:rgba(2,12,22,0.95);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -118,7 +134,7 @@
   }
   @keyframes smove { 0%{top:4px;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:calc(100% - 4px);opacity:0} }
   .scan-hint { margin-top:14px; font-family:'Space Mono',monospace; font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.08em; text-transform:uppercase; text-align:center; }
-  .scan-tags { display:flex; gap:6px; margin-top:8px; }
+  .scan-tags { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
   .stag { font-family:'Space Mono',monospace; font-size:8px; padding:2px 8px; border-radius:2px; border:1px solid rgba(0,212,255,0.25); color:rgba(0,212,255,0.6); background:rgba(0,212,255,0.06); }
 
   .cam-btns { position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:6px; z-index:10; }
@@ -149,6 +165,83 @@
   .chip-l { font-family:'Space Mono',monospace; font-size:7.5px; color:var(--muted); text-transform:uppercase; }
   .chip-v { font-size:11px; color:var(--text); }
 
+  /* IMAGE UPLOAD PANEL */
+  #uploadPanel { display:none; padding:16px; }
+
+  .drop-zone {
+    border:2px dashed var(--border); border-radius:8px;
+    padding:32px 20px; text-align:center; cursor:pointer;
+    transition:all 0.25s; position:relative; background:var(--surface);
+  }
+  .drop-zone.dragover {
+    border-color:var(--accent); background:rgba(0,212,255,0.06);
+    box-shadow:0 0 24px rgba(0,212,255,0.1);
+  }
+  .drop-zone:hover { border-color:var(--accent); }
+  #imgFileInput { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .dz-icon { font-size:38px; margin-bottom:10px; }
+  .dz-title { font-family:'Syne',sans-serif; font-size:15px; color:#fff; margin-bottom:5px; }
+  .dz-sub { font-size:11px; color:var(--muted); line-height:1.6; }
+  .dz-or {
+    display:flex; align-items:center; gap:10px; margin:14px 0;
+    font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase;
+  }
+  .dz-or::before,.dz-or::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .cam-capture-btn {
+    width:100%; background:rgba(0,212,255,0.08); border:1.5px solid rgba(0,212,255,0.3);
+    color:var(--accent); border-radius:6px; padding:12px; font-family:'Space Mono',monospace;
+    font-size:10px; letter-spacing:0.08em; cursor:pointer; text-transform:uppercase;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;
+    position:relative;
+  }
+  .cam-capture-btn:hover { background:rgba(0,212,255,0.14); }
+  #captureInput { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+
+  /* Image preview area */
+  #imgPreviewWrap { display:none; margin-top:14px; }
+  .preview-card {
+    background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;
+  }
+  .preview-top {
+    position:relative; background:#000; display:flex; align-items:center; justify-content:center;
+    min-height:160px; max-height:280px; overflow:hidden;
+  }
+  #previewImg { max-width:100%; max-height:280px; display:block; object-fit:contain; }
+  .preview-scan-overlay {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(2,12,22,0.7); flex-direction:column; gap:10px;
+  }
+  .preview-scan-overlay.hidden { display:none; }
+  .pspin { width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .pspin-txt { font-family:'Space Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:0.06em; }
+
+  .preview-result {
+    padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .pr-code { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); word-break:break-all; }
+  .pr-fmt { font-family:'Space Mono',monospace; font-size:8px; padding:2px 7px; border-radius:2px; background:rgba(0,212,255,0.1); color:var(--accent); border:1px solid rgba(0,212,255,0.25); white-space:nowrap; }
+  .pr-err { font-family:'Space Mono',monospace; font-size:10px; color:var(--danger); }
+
+  .clear-btn {
+    margin-top:10px; width:100%; background:transparent; border:1px solid var(--border);
+    color:var(--muted); border-radius:4px; padding:9px; font-family:'Space Mono',monospace;
+    font-size:9px; text-transform:uppercase; letter-spacing:0.07em; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .clear-btn:hover { border-color:var(--danger); color:var(--danger); }
+
+  /* Tips */
+  .tips-box {
+    margin-top:14px; background:rgba(0,212,255,0.04); border:1px solid rgba(0,212,255,0.12);
+    border-radius:6px; padding:12px 14px;
+  }
+  .tips-title { font-family:'Space Mono',monospace; font-size:8px; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); margin-bottom:8px; }
+  .tip { font-size:11px; color:var(--muted); line-height:1.55; display:flex; gap:7px; margin-bottom:4px; }
+  .tip::before { content:'›'; color:var(--accent); flex-shrink:0; }
+
+  /* BOTTOM */
   .bot { flex:1; padding:14px 16px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
 
   .srow { display:flex; gap:8px; }
@@ -168,7 +261,6 @@
   .loading { display:none; align-items:center; justify-content:center; gap:10px; padding:22px; }
   .loading.show { display:flex; }
   .spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
   .ltxt { font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); }
 
   .dcard { background:var(--card); border:1px solid var(--border); border-radius:6px; overflow:hidden; display:none; }
@@ -224,6 +316,8 @@
   #flash.go { animation:fgo 0.5s ease; }
   @keyframes fgo { 0%{opacity:1} 100%{opacity:0} }
 
+  canvas#decodeCanvas { display:none; }
+
   @media(min-width:600px) { #video{max-height:52vh} .igrid{grid-template-columns:repeat(3,1fr)} }
 </style>
 </head>
@@ -231,6 +325,7 @@
 
 <div id="flash"></div>
 <div class="toast" id="toast"></div>
+<canvas id="decodeCanvas"></canvas>
 
 <!-- SPLASH -->
 <div id="splash">
@@ -242,6 +337,7 @@
     <div class="splash-feat"><span>⬛</span>DataMatrix</div>
     <div class="splash-feat"><span>📦</span>Barcodes</div>
     <div class="splash-feat"><span>📱</span>QR Codes</div>
+    <div class="splash-feat"><span>🖼️</span>Image Scan</div>
     <div class="splash-feat"><span>🏥</span>FDA Data</div>
   </div>
   <button class="splash-btn" onclick="startApp()">► Launch Scanner</button>
@@ -254,44 +350,95 @@
     <div class="status"><div class="dot" id="dot"></div><span id="stxt">Ready</span></div>
   </div>
 
-  <div class="cam-wrap">
-    <video id="video" autoplay muted playsinline></video>
-
-    <!-- Camera permission prompt shown BEFORE requesting access -->
-    <div id="camPrompt">
-      <div class="cp-icon">📷</div>
-      <div class="cp-title">Camera Access Needed</div>
-      <div class="cp-sub">To scan medicine barcodes, allow camera access when your browser asks. Your camera is never recorded or stored.</div>
-      <button class="cp-btn" onclick="requestCamera()">Allow Camera</button>
+  <!-- Mode Switcher -->
+  <div class="mode-tabs">
+    <div class="mtab active" id="mtab-live" onclick="switchMode('live')">
+      <span class="mtab-icon">📷</span> Live Scan
     </div>
-
-    <div class="scan-ui">
-      <div class="frame-box">
-        <div class="c tl"></div><div class="c tr"></div>
-        <div class="c bl"></div><div class="c br"></div>
-        <div class="sline"></div>
-      </div>
-      <div class="scan-hint" id="scanHint">Align barcode · DataMatrix · QR</div>
-      <div class="scan-tags">
-        <span class="stag">EAN/UPC</span>
-        <span class="stag">DataMatrix</span>
-        <span class="stag">QR</span>
-        <span class="stag">Code128</span>
-      </div>
-    </div>
-    <div class="cam-btns">
-      <div class="cbtn" id="torchBtn" onclick="toggleTorch()">🔦</div>
-      <div class="cbtn" onclick="flipCam()">🔄</div>
-    </div>
-    <div class="ar-ov" id="arOv">
-      <div class="ar-top">
-        <div><div class="ar-name" id="arName">—</div><div class="ar-mfr" id="arMfr">—</div></div>
-        <div class="badge otc" id="arBadge">OTC</div>
-      </div>
-      <div class="ar-chips" id="arChips"></div>
+    <div class="mtab" id="mtab-upload" onclick="switchMode('upload')">
+      <span class="mtab-icon">🖼️</span> Upload Image
     </div>
   </div>
 
+  <!-- LIVE CAMERA PANEL -->
+  <div id="camPanel">
+    <div class="cam-wrap">
+      <video id="video" autoplay muted playsinline></video>
+      <div id="camPrompt">
+        <div class="cp-icon">📷</div>
+        <div class="cp-title">Camera Access Needed</div>
+        <div class="cp-sub">To scan medicine barcodes, allow camera access when your browser asks. Your camera is never recorded or stored.</div>
+        <button class="cp-btn" onclick="requestCamera()">Allow Camera</button>
+      </div>
+      <div class="scan-ui">
+        <div class="frame-box">
+          <div class="c tl"></div><div class="c tr"></div>
+          <div class="c bl"></div><div class="c br"></div>
+          <div class="sline"></div>
+        </div>
+        <div class="scan-hint" id="scanHint">Align barcode · DataMatrix · QR</div>
+        <div class="scan-tags">
+          <span class="stag">EAN/UPC</span>
+          <span class="stag">DataMatrix</span>
+          <span class="stag">QR</span>
+          <span class="stag">Code128</span>
+        </div>
+      </div>
+      <div class="cam-btns">
+        <div class="cbtn" id="torchBtn" onclick="toggleTorch()">🔦</div>
+        <div class="cbtn" onclick="flipCam()">🔄</div>
+      </div>
+      <div class="ar-ov" id="arOv">
+        <div class="ar-top">
+          <div><div class="ar-name" id="arName">—</div><div class="ar-mfr" id="arMfr">—</div></div>
+          <div class="badge otc" id="arBadge">OTC</div>
+        </div>
+        <div class="ar-chips" id="arChips"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE UPLOAD PANEL -->
+  <div id="uploadPanel">
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFile(this.files[0])">
+      <div class="dz-icon">🖼️</div>
+      <div class="dz-title">Drop a medicine image here</div>
+      <div class="dz-sub">Supports JPG, PNG, WEBP · Works with any barcode, QR or DataMatrix on the packaging</div>
+    </div>
+
+    <div class="dz-or">or</div>
+
+    <button class="cam-capture-btn">
+      <input type="file" id="captureInput" accept="image/*" capture="environment" onchange="handleImageFile(this.files[0])">
+      📸 Take Photo with Camera
+    </button>
+
+    <!-- Preview & result -->
+    <div id="imgPreviewWrap">
+      <div class="preview-card">
+        <div class="preview-top">
+          <img id="previewImg" alt="Uploaded medicine image">
+          <div class="preview-scan-overlay" id="scanOverlay">
+            <div class="pspin"></div>
+            <div class="pspin-txt">Decoding barcode…</div>
+          </div>
+        </div>
+        <div class="preview-result" id="previewResult"></div>
+      </div>
+      <button class="clear-btn" onclick="clearImage()">✕ Clear Image</button>
+    </div>
+
+    <div class="tips-box">
+      <div class="tips-title">📌 Tips for best results</div>
+      <div class="tip">Take the photo in good lighting — avoid shadows over the barcode</div>
+      <div class="tip">Hold camera steady and close to the barcode (5–15 cm)</div>
+      <div class="tip">Make sure the full barcode is visible and not cut off</div>
+      <div class="tip">Works with EAN-13, UPC, QR codes, DataMatrix and Code128</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM: Search + Results -->
   <div class="bot">
     <div class="srow">
       <input class="sinput" id="sinput" type="text" placeholder="Type medicine name (e.g. paracetamol, ibuprofen)…" onkeydown="if(event.key==='Enter')doSearch()">
@@ -309,10 +456,10 @@
         <div class="badge otc" id="dbadge">OTC</div>
       </div>
       <div class="tabs">
-        <div class="tab active" onclick="goTab('overview',this)">Overview</div>
-        <div class="tab" onclick="goTab('dosage',this)">Dosage</div>
-        <div class="tab" onclick="goTab('warnings',this)">Warnings</div>
-        <div class="tab" onclick="goTab('interactions',this)">Interactions</div>
+        <div class="tab active" onclick="goTab('overview')">Overview</div>
+        <div class="tab" onclick="goTab('dosage')">Dosage</div>
+        <div class="tab" onclick="goTab('warnings')">Warnings</div>
+        <div class="tab" onclick="goTab('interactions')">Interactions</div>
       </div>
       <div class="pane active" id="p-overview">
         <div class="igrid" id="ogrid"></div>
@@ -338,7 +485,7 @@
     <div id="ewrap">
       <div class="empty">
         <div class="eico">💊</div>
-        <div class="etxt">Scan a barcode, DataMatrix, or QR code<br>on any medicine — or type a name above</div>
+        <div class="etxt">Scan a barcode with live camera,<br>upload a medicine photo, or type a name above</div>
       </div>
       <div id="hwrap" style="display:none">
         <div class="hlbl">Recent Scans</div>
@@ -350,36 +497,155 @@
 
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
+/* ── State ── */
 let reader = null;
 let facing = 'environment';
 let torchOn = false;
 let lastCode = '';
 let cooldown = false;
 let activeStream = null;
+let currentMode = 'live';
 let hist = [];
 try { hist = JSON.parse(localStorage.getItem('mh2') || '[]'); } catch(_) {}
 
+/* ── Splash ── */
 function startApp() {
   document.getElementById('splash').classList.add('fade-out');
   setTimeout(() => {
     document.getElementById('splash').style.display = 'none';
     document.getElementById('app').classList.add('visible');
     renderHist();
-    // Check if camera permission already granted — skip prompt if so
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'camera' }).then(res => {
-        if (res.state === 'granted') {
-          hideCamPrompt();
-          initScan();
-        }
-        // else keep the prompt overlay visible
-      }).catch(() => {
-        // permissions API not supported — keep prompt visible, user taps button
-      });
+        if (res.state === 'granted') { hideCamPrompt(); initScan(); }
+      }).catch(() => {});
     }
   }, 600);
 }
 
+/* ── Mode Switch ── */
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('mtab-live').classList.toggle('active', mode === 'live');
+  document.getElementById('mtab-upload').classList.toggle('active', mode === 'upload');
+  document.getElementById('camPanel').style.display = mode === 'live' ? 'block' : 'none';
+  document.getElementById('uploadPanel').style.display = mode === 'upload' ? 'block' : 'none';
+}
+
+/* ── Drag & Drop ── */
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleImageFile(file);
+  else showToast('Please drop an image file', 'err');
+});
+
+/* ── Image Upload & Decode ── */
+async function handleImageFile(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const previewImg = document.getElementById('previewImg');
+  previewImg.src = url;
+  document.getElementById('imgPreviewWrap').style.display = 'block';
+  document.getElementById('scanOverlay').classList.remove('hidden');
+  document.getElementById('previewResult').innerHTML = '';
+
+  try {
+    const code = await decodeImageBarcode(url);
+    document.getElementById('scanOverlay').classList.add('hidden');
+    if (code) {
+      document.getElementById('previewResult').innerHTML =
+        `<div class="pr-code">${code.text}</div><div class="pr-fmt">${code.fmt}</div>`;
+      flash();
+      showToast('✓ Barcode found! Looking up…', 'ok');
+      lookup(code.text);
+    } else {
+      document.getElementById('previewResult').innerHTML =
+        `<div class="pr-err">⚠ No barcode detected. Try a clearer photo or manual search.</div>`;
+      showToast('No barcode found in image', 'err');
+    }
+  } catch(e) {
+    document.getElementById('scanOverlay').classList.add('hidden');
+    document.getElementById('previewResult').innerHTML =
+      `<div class="pr-err">⚠ Decode error. Please try again.</div>`;
+    showToast('Could not decode image', 'err');
+  }
+}
+
+function decodeImageBarcode(imageUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.getElementById('decodeCanvas');
+      // Try multiple resolutions for better decode success
+      const scales = [1, 1.5, 2, 0.75];
+      let result = null;
+
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.DATA_MATRIX,
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.PDF_417,
+        ZXing.BarcodeFormat.AZTEC,
+        ZXing.BarcodeFormat.RSS_14,
+      ]);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+
+      const imgReader = new ZXing.BrowserMultiFormatReader(hints);
+
+      // Try at each scale
+      for (const scale of scales) {
+        try {
+          canvas.width  = Math.round(img.naturalWidth  * scale);
+          canvas.height = Math.round(img.naturalHeight * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Also try contrast-enhanced version
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const lum = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+          const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+          result = imgReader.decodeBitmap(bmp);
+          if (result) break;
+        } catch(e) {
+          // Not found at this scale, try next
+        }
+      }
+
+      imgReader.reset();
+      if (result) {
+        resolve({ text: result.getText(), fmt: result.getBarcodeFormat()?.toString() || 'Code' });
+      } else {
+        resolve(null);
+      }
+    };
+    img.onerror = () => reject(new Error('Image load failed'));
+    img.src = imageUrl;
+  });
+}
+
+function clearImage() {
+  document.getElementById('imgPreviewWrap').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('previewResult').innerHTML = '';
+  document.getElementById('imgFileInput').value = '';
+  document.getElementById('captureInput').value = '';
+  document.getElementById('scanOverlay').classList.remove('hidden');
+}
+
+/* ── Live Camera ── */
 function hideCamPrompt() {
   document.getElementById('camPrompt').classList.add('hidden');
 }
@@ -387,34 +653,27 @@ function hideCamPrompt() {
 async function requestCamera() {
   setS('ready', 'Requesting camera…');
   try {
-    // Explicitly call getUserMedia — this triggers the browser permission dialog
-    const constraints = {
-      video: {
-        facingMode: facing,
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    };
-    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
     const video = document.getElementById('video');
     video.srcObject = activeStream;
     await video.play();
     hideCamPrompt();
     startZXingFromStream(activeStream);
   } catch (e) {
-    console.error('Camera error:', e);
     if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
       setS('err', 'Denied');
-      showToast('Camera permission denied. Use manual search ↓', 'err');
+      showToast('Camera denied. Use Upload Image tab instead ↑', 'err');
       document.querySelector('.cp-sub').textContent =
-        'Permission was denied. Please allow camera access in your browser settings, then tap Allow Camera again.';
+        'Permission denied. Try the "Upload Image" tab to scan from a photo instead.';
     } else if (e.name === 'NotFoundError') {
       setS('err', 'No camera');
-      showToast('No camera found on this device', 'err');
+      showToast('No camera found — use Upload Image tab ↑', 'err');
       hideCamPrompt();
     } else {
       setS('err', 'Camera error');
-      showToast('Camera unavailable. Use manual search ↓', 'err');
+      showToast('Camera unavailable. Use Upload Image tab ↑', 'err');
     }
   }
 }
@@ -424,56 +683,41 @@ function startZXingFromStream(stream) {
   try {
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-      ZXing.BarcodeFormat.DATA_MATRIX,
-      ZXing.BarcodeFormat.QR_CODE,
-      ZXing.BarcodeFormat.EAN_13,
-      ZXing.BarcodeFormat.EAN_8,
-      ZXing.BarcodeFormat.UPC_A,
-      ZXing.BarcodeFormat.UPC_E,
-      ZXing.BarcodeFormat.CODE_128,
-      ZXing.BarcodeFormat.CODE_39,
-      ZXing.BarcodeFormat.ITF,
-      ZXing.BarcodeFormat.PDF_417,
-      ZXing.BarcodeFormat.AZTEC,
+      ZXing.BarcodeFormat.DATA_MATRIX, ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.PDF_417, ZXing.BarcodeFormat.AZTEC,
     ]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-
     reader = new ZXing.BrowserMultiFormatReader(hints, 300);
-    // Pass the already-approved stream directly — no second permission prompt
-    reader.decodeFromStream(stream, 'video', (res, err) => {
+    reader.decodeFromStream(stream, 'video', (res) => {
       if (res) onScan(res.getText(), res.getBarcodeFormat()?.toString() || 'Code');
     });
   } catch(e) {
-    console.error('ZXing init error:', e);
     setS('err', 'Decode error');
-    showToast('Scanner init failed. Use manual search ↓', 'err');
+    showToast('Scanner init failed. Try Upload Image tab ↑', 'err');
   }
 }
 
 async function initScan() {
-  // Called only when permission is already known to be granted
   setS('ready', 'Starting…');
   try {
-    const constraints = {
+    activeStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }
-    };
-    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+    });
     const video = document.getElementById('video');
     video.srcObject = activeStream;
     await video.play();
     startZXingFromStream(activeStream);
-  } catch(e) {
-    setS('err', 'Camera error');
-  }
+  } catch(e) { setS('err', 'Camera error'); }
 }
 
 function onScan(code, fmt) {
   if (!code || cooldown || code === lastCode) return;
   lastCode = code; cooldown = true;
   setTimeout(() => { cooldown = false; }, 4000);
-
-  const f = document.getElementById('flash');
-  f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+  flash();
   setS('found', fmt + ' found!');
   document.getElementById('scanHint').textContent = '✓ ' + fmt + ': ' + code.slice(0,22);
   showToast('✓ Code scanned! Looking up…', 'ok');
@@ -499,45 +743,31 @@ async function toggleTorch() {
   document.getElementById('torchBtn').classList.toggle('on', torchOn);
 }
 
+/* ── FDA Lookup ── */
 async function lookup(code) {
   showLoad('Looking up ' + code.slice(0,16) + '…');
   const clean = code.replace(/^0+/, '').trim();
   let drug = null;
-
-  const urls = [
+  for (const u of [
     `https://api.fda.gov/drug/label.json?search=openfda.upc:"${code}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search=openfda.package_ndc:"${clean}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search=openfda.upc:"${clean}"&limit=1`,
     `https://api.fda.gov/drug/ndc.json?search=product_ndc:"${clean}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search="${clean}"&limit=1`,
-  ];
-
-  for (const u of urls) {
-    try {
-      const r = await fetch(u); if (!r.ok) continue;
-      const d = await r.json(); if (d.results?.length) { drug = d.results[0]; break; }
-    } catch(_) {}
+  ]) {
+    try { const r=await fetch(u); if(!r.ok) continue; const d=await r.json(); if(d.results?.length){drug=d.results[0];break;} } catch(_){}
   }
-
   if (!drug && isNaN(Number(code)) && code.length > 3) {
     for (const u of [
       `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(code)}"&limit=1`,
       `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(code)}&limit=1`,
     ]) {
-      try {
-        const r = await fetch(u); if (!r.ok) continue;
-        const d = await r.json(); if (d.results?.length) { drug = d.results[0]; break; }
-      } catch(_) {}
+      try { const r=await fetch(u); if(!r.ok) continue; const d=await r.json(); if(d.results?.length){drug=d.results[0];break;} } catch(_){}
     }
   }
-
   hideLoad();
   if (drug) showDrug(drug, code);
-  else {
-    showToast('Not in FDA database. Try manual search ↓', 'err');
-    setS('scanning', 'Scanning…');
-    lastCode = '';
-  }
+  else { showToast('Not in FDA database. Try manual search ↓', 'err'); setS('scanning','Scanning…'); lastCode=''; }
 }
 
 async function doSearch() {
@@ -551,24 +781,22 @@ async function doSearch() {
     `https://api.fda.gov/drug/label.json?search=openfda.substance_name:"${encodeURIComponent(q)}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(q)}&limit=1`,
   ]) {
-    try {
-      const r = await fetch(u); if (!r.ok) continue;
-      const d = await r.json(); if (d.results?.length) { drug = d.results[0]; break; }
-    } catch(_) {}
+    try { const r=await fetch(u); if(!r.ok) continue; const d=await r.json(); if(d.results?.length){drug=d.results[0];break;} } catch(_){}
   }
   hideLoad();
   if (drug) showDrug(drug, q);
   else showToast('No results. Try different spelling.', 'err');
 }
 
+/* ── Display Drug ── */
 function showDrug(drug, code) {
   const f = drug.openfda || {};
-  const brand  = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown').toUpperCase();
-  const gen    = f.generic_name?.[0] || f.substance_name?.[0] || '';
-  const mfr    = f.manufacturer_name?.[0] || '—';
-  const rxotc  = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
-  const route  = f.route?.[0] || '—';
-  const form   = f.dosage_form?.[0] || '—';
+  const brand = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown').toUpperCase();
+  const gen   = f.generic_name?.[0] || f.substance_name?.[0] || '';
+  const mfr   = f.manufacturer_name?.[0] || '—';
+  const rxotc = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
+  const route = f.route?.[0] || '—';
+  const form  = f.dosage_form?.[0] || '—';
 
   document.getElementById('arName').textContent = brand;
   document.getElementById('arMfr').textContent = mfr;
@@ -583,26 +811,22 @@ function showDrug(drug, code) {
   setBadge('dbadge', rxotc);
 
   const grid = [
-    {l:'Manufacturer',v:mfr,c:''},
-    {l:'Route',v:route,c:'c1'},
-    {l:'Form',v:form,c:''},
-    {l:'Type',v:rxotc==='OTC'?'Over the Counter':'Prescription',c:rxotc==='OTC'?'c2':'c3'},
+    {l:'Manufacturer',v:mfr,c:''},{l:'Route',v:route,c:'c1'},
+    {l:'Form',v:form,c:''},{l:'Type',v:rxotc==='OTC'?'Over the Counter':'Prescription',c:rxotc==='OTC'?'c2':'c3'},
   ];
   if (f.pharm_class_epc?.[0]) grid.push({l:'Drug Class',v:f.pharm_class_epc[0],c:''});
   document.getElementById('ogrid').innerHTML = grid.map(i=>`<div class="ibox"><div class="ilbl">${i.l}</div><div class="ival ${i.c}">${i.v}</div></div>`).join('');
   document.getElementById('purpose').textContent = trunc(drug.purpose?.[0]||drug.indications_and_usage?.[0]||drug.description?.[0]||'—',320);
   document.getElementById('rtags').innerHTML = (f.route||[]).map(r=>`<span class="ttag b">${r}</span>`).join('');
-
   document.getElementById('dosage').textContent = trunc(drug.dosage_and_administration?.[0]||'—',420);
   document.getElementById('stopuse').textContent = trunc(drug.stop_use?.[0]||'Consult your doctor.',280);
 
   let wb = '';
   if (drug.boxed_warning?.[0]) wb += `<div class="dbox"><div class="wico">☠️</div><div class="dtxt"><strong>BOXED WARNING:</strong> ${trunc(drug.boxed_warning[0],280)}</div></div>`;
-  if (drug.warnings?.[0])      wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0],360)}</div></div>`;
+  if (drug.warnings?.[0]) wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0],360)}</div></div>`;
   if (drug.contraindications?.[0]) wb += `<div class="slbl">Contraindications</div><div class="dbox"><div class="wico">🚫</div><div class="dtxt">${trunc(drug.contraindications[0],280)}</div></div>`;
   if (drug.adverse_reactions?.[0]) wb += `<div class="slbl">Side Effects</div><div class="prose">${trunc(drug.adverse_reactions[0],360)}</div>`;
   document.getElementById('wbody').innerHTML = wb || '<div class="prose" style="color:var(--muted)">No specific warnings listed.</div>';
-
   document.getElementById('interactions').textContent = trunc(drug.drug_interactions?.[0]||'—',400);
   document.getElementById('askdoc').textContent = trunc(drug.ask_doctor_or_pharmacist?.[0]||drug.ask_doctor?.[0]||'Ask your doctor or pharmacist.',280);
 
@@ -617,16 +841,18 @@ function showDrug(drug, code) {
   renderHist();
   setS('found','Scanned ✓');
   setTimeout(()=>setS('scanning','Scanning…'),4000);
+
+  // Scroll results into view
+  document.getElementById('dcard').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-function goTab(name, el) {
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    t.classList.toggle('active',['overview','dosage','warnings','interactions'][i]===name);
-  });
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+/* ── Helpers ── */
+function goTab(name) {
+  const names = ['overview','dosage','warnings','interactions'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i]===name));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
   document.getElementById('p-'+name).classList.add('active');
 }
-
 function setBadge(id, v) {
   const el=document.getElementById(id);
   el.textContent=v; el.className='badge '+(v==='OTC'?'otc':'rx');
@@ -646,6 +872,10 @@ function showToast(msg,type='') {
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast show '+type;
   setTimeout(()=>t.className='toast',3500);
+}
+function flash() {
+  const f=document.getElementById('flash');
+  f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
 }
 function trunc(s,n) {
   if(!s) return '—';
