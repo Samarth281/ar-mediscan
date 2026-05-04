@@ -22,7 +22,6 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
 
-  /* SPLASH */
   #splash {
     position:fixed; inset:0; background:var(--bg);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -55,11 +54,9 @@
   }
   .splash-btn:hover { background:rgba(0,212,255,0.2); box-shadow:0 0 30px rgba(0,212,255,0.2); }
 
-  /* APP */
   #app { display:none; flex-direction:column; min-height:100vh; }
   #app.visible { display:flex; }
 
-  /* HEADER */
   .hdr {
     padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
     border-bottom:1px solid var(--border); background:rgba(8,24,40,0.97);
@@ -84,9 +81,24 @@
   .dot.err     { background:var(--danger);  box-shadow:0 0 6px var(--danger); }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* CAMERA */
   .cam-wrap { position:relative; background:#000; overflow:hidden; flex-shrink:0; }
-  #video { width:100%; display:block; object-fit:cover; max-height:62vh; }
+  #video { width:100%; display:block; object-fit:cover; max-height:62vh; min-height:200px; }
+
+  /* Camera permission prompt overlay */
+  #camPrompt {
+    position:absolute; inset:0; background:rgba(2,12,22,0.95);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; z-index:20; padding:24px;
+  }
+  #camPrompt.hidden { display:none; }
+  .cp-icon { font-size:44px; }
+  .cp-title { font-family:'Syne',sans-serif; font-size:18px; color:#fff; text-align:center; }
+  .cp-sub { font-size:12px; color:var(--muted); text-align:center; line-height:1.6; max-width:260px; }
+  .cp-btn {
+    background:var(--accent); color:#000; border:none; border-radius:4px;
+    padding:12px 28px; font-family:'Space Mono',monospace; font-size:11px;
+    font-weight:700; cursor:pointer; letter-spacing:0.05em;
+  }
 
   .scan-ui {
     position:absolute; inset:0; display:flex; flex-direction:column;
@@ -119,7 +131,6 @@
   .cbtn:hover { border-color:var(--accent); }
   .cbtn.on { border-color:var(--accent2); background:rgba(0,255,157,0.12); }
 
-  /* AR overlay */
   .ar-ov {
     position:absolute; bottom:0; left:0; right:0;
     background:linear-gradient(0deg,rgba(2,12,22,0.97) 0%,rgba(2,12,22,0.88) 75%,transparent 100%);
@@ -138,7 +149,6 @@
   .chip-l { font-family:'Space Mono',monospace; font-size:7.5px; color:var(--muted); text-transform:uppercase; }
   .chip-v { font-size:11px; color:var(--text); }
 
-  /* BOTTOM */
   .bot { flex:1; padding:14px 16px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
 
   .srow { display:flex; gap:8px; }
@@ -246,6 +256,15 @@
 
   <div class="cam-wrap">
     <video id="video" autoplay muted playsinline></video>
+
+    <!-- Camera permission prompt shown BEFORE requesting access -->
+    <div id="camPrompt">
+      <div class="cp-icon">📷</div>
+      <div class="cp-title">Camera Access Needed</div>
+      <div class="cp-sub">To scan medicine barcodes, allow camera access when your browser asks. Your camera is never recorded or stored.</div>
+      <button class="cp-btn" onclick="requestCamera()">Allow Camera</button>
+    </div>
+
     <div class="scan-ui">
       <div class="frame-box">
         <div class="c tl"></div><div class="c tr"></div>
@@ -336,20 +355,72 @@ let facing = 'environment';
 let torchOn = false;
 let lastCode = '';
 let cooldown = false;
-let hist = JSON.parse(localStorage.getItem('mh2') || '[]');
+let activeStream = null;
+let hist = [];
+try { hist = JSON.parse(localStorage.getItem('mh2') || '[]'); } catch(_) {}
 
 function startApp() {
   document.getElementById('splash').classList.add('fade-out');
   setTimeout(() => {
     document.getElementById('splash').style.display = 'none';
     document.getElementById('app').classList.add('visible');
-    initScan();
     renderHist();
+    // Check if camera permission already granted — skip prompt if so
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'camera' }).then(res => {
+        if (res.state === 'granted') {
+          hideCamPrompt();
+          initScan();
+        }
+        // else keep the prompt overlay visible
+      }).catch(() => {
+        // permissions API not supported — keep prompt visible, user taps button
+      });
+    }
   }, 600);
 }
 
-async function initScan() {
-  setS('ready', 'Starting…');
+function hideCamPrompt() {
+  document.getElementById('camPrompt').classList.add('hidden');
+}
+
+async function requestCamera() {
+  setS('ready', 'Requesting camera…');
+  try {
+    // Explicitly call getUserMedia — this triggers the browser permission dialog
+    const constraints = {
+      video: {
+        facingMode: facing,
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    };
+    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('video');
+    video.srcObject = activeStream;
+    await video.play();
+    hideCamPrompt();
+    startZXingFromStream(activeStream);
+  } catch (e) {
+    console.error('Camera error:', e);
+    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+      setS('err', 'Denied');
+      showToast('Camera permission denied. Use manual search ↓', 'err');
+      document.querySelector('.cp-sub').textContent =
+        'Permission was denied. Please allow camera access in your browser settings, then tap Allow Camera again.';
+    } else if (e.name === 'NotFoundError') {
+      setS('err', 'No camera');
+      showToast('No camera found on this device', 'err');
+      hideCamPrompt();
+    } else {
+      setS('err', 'Camera error');
+      showToast('Camera unavailable. Use manual search ↓', 'err');
+    }
+  }
+}
+
+function startZXingFromStream(stream) {
+  setS('scanning', 'Scanning…');
   try {
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -368,16 +439,31 @@ async function initScan() {
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
 
     reader = new ZXing.BrowserMultiFormatReader(hints, 300);
-    const devs = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
-    const back = devs.find(d => /back|rear|environment/i.test(d.label));
-    await reader.decodeFromVideoDevice(back?.deviceId, 'video', (res, err) => {
+    // Pass the already-approved stream directly — no second permission prompt
+    reader.decodeFromStream(stream, 'video', (res, err) => {
       if (res) onScan(res.getText(), res.getBarcodeFormat()?.toString() || 'Code');
     });
-    setS('scanning', 'Scanning…');
   } catch(e) {
-    console.error(e);
+    console.error('ZXing init error:', e);
+    setS('err', 'Decode error');
+    showToast('Scanner init failed. Use manual search ↓', 'err');
+  }
+}
+
+async function initScan() {
+  // Called only when permission is already known to be granted
+  setS('ready', 'Starting…');
+  try {
+    const constraints = {
+      video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }
+    };
+    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('video');
+    video.srcObject = activeStream;
+    await video.play();
+    startZXingFromStream(activeStream);
+  } catch(e) {
     setS('err', 'Camera error');
-    showToast('Camera denied. Use manual search ↓', 'err');
   }
 }
 
@@ -395,7 +481,8 @@ function onScan(code, fmt) {
 }
 
 async function flipCam() {
-  if (reader) { reader.reset(); reader = null; }
+  if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
+  if (reader) { try { reader.reset(); } catch(_){} reader = null; }
   facing = facing === 'environment' ? 'user' : 'environment';
   lastCode = '';
   await initScan();
@@ -432,7 +519,6 @@ async function lookup(code) {
     } catch(_) {}
   }
 
-  // if DataMatrix had text (medicine name embedded)
   if (!drug && isNaN(Number(code)) && code.length > 3) {
     for (const u of [
       `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(code)}"&limit=1`,
@@ -484,7 +570,6 @@ function showDrug(drug, code) {
   const route  = f.route?.[0] || '—';
   const form   = f.dosage_form?.[0] || '—';
 
-  // AR overlay
   document.getElementById('arName').textContent = brand;
   document.getElementById('arMfr').textContent = mfr;
   setBadge('arBadge', rxotc);
@@ -493,7 +578,6 @@ function showDrug(drug, code) {
   ].map(c=>`<div class="chip"><div class="chip-l">${c.l}</div><div class="chip-v">${c.v}</div></div>`).join('');
   document.getElementById('arOv').classList.add('show');
 
-  // Detail
   document.getElementById('dname').textContent = brand;
   document.getElementById('dgen').textContent = gen && gen !== brand ? gen : '';
   setBadge('dbadge', rxotc);
@@ -529,7 +613,7 @@ function showDrug(drug, code) {
   hist = hist.filter(h=>h.code!==String(code));
   hist.unshift({name:brand,code:String(code),gen});
   if (hist.length>6) hist.length=6;
-  localStorage.setItem('mh2', JSON.stringify(hist));
+  try { localStorage.setItem('mh2', JSON.stringify(hist)); } catch(_) {}
   renderHist();
   setS('found','Scanned ✓');
   setTimeout(()=>setS('scanning','Scanning…'),4000);
