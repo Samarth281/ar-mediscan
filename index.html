@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AR-MediScan</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-<!-- A-Frame + AR.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-<!-- ZXing for barcode -->
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 
 <style>
@@ -24,102 +19,108 @@
     --text: #ddeef8;
     --muted: #5a8aaa;
     --danger: #ff4466;
+    --hdr-h: 50px;
+    --tab-h: 40px;
+    --top-h: 90px; /* hdr + tabs */
   }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height: 100%; overflow: hidden; }
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    overflow: hidden;
   }
 
   /* ── SPLASH ── */
   #splash {
     position: fixed; inset: 0; background: var(--bg);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 2000; transition: opacity 0.7s ease;
+    z-index: 2000; transition: opacity 0.6s ease; padding: 20px;
   }
   #splash.fade-out { opacity: 0; pointer-events: none; }
   .splash-glow {
-    position: absolute; width: 500px; height: 500px; border-radius: 50%;
+    position: absolute; width: min(500px,130vw); height: min(500px,130vw); border-radius: 50%;
     background: radial-gradient(circle, rgba(0,212,255,0.13) 0%, transparent 70%);
-    animation: pulse 3s ease-in-out infinite;
+    animation: gpulse 3s ease-in-out infinite;
   }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-  .splash-icon { font-size: 60px; position: relative; z-index: 1; margin-bottom: 16px; }
+  @keyframes gpulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  .splash-icon { font-size: clamp(40px,10vw,60px); position: relative; z-index: 1; margin-bottom: 12px; }
   .splash-logo {
-    font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px,9vw,48px);
+    font-weight: 800;
     background: linear-gradient(135deg, #fff 0%, var(--accent) 55%, var(--accent2) 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    position: relative; z-index: 1;
+    position: relative; z-index: 1; text-align: center;
   }
   .splash-sub {
-    font-size: 11px; color: var(--muted); letter-spacing: 0.18em;
-    text-transform: uppercase; margin-top: 8px; position: relative; z-index: 1;
+    font-size: clamp(9px,2.5vw,11px); color: var(--muted); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-top: 8px; position: relative; z-index: 1; text-align: center;
   }
-  .splash-feats {
-    display: flex; gap: 20px; margin-top: 28px; position: relative;
-    z-index: 1; flex-wrap: wrap; justify-content: center;
-  }
-  .splash-feat {
-    text-align: center; font-size: 10px; color: var(--muted);
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
-  }
-  .splash-feat span { font-size: 24px; }
-
-  /* NEW: True AR badge */
   .ar-true-badge {
-    margin-top: 20px; position: relative; z-index: 1;
+    margin-top: 16px; position: relative; z-index: 1;
     background: linear-gradient(135deg, rgba(0,255,157,0.15), rgba(0,212,255,0.1));
-    border: 1.5px solid var(--accent2);
-    border-radius: 20px; padding: 6px 18px;
-    font-family: 'Space Mono', monospace; font-size: 9px;
-    color: var(--accent2); letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1.5px solid var(--accent2); border-radius: 20px; padding: 5px 14px;
+    font-family: 'Space Mono', monospace; font-size: clamp(8px,2vw,9px);
+    color: var(--accent2); letter-spacing: 0.1em; text-transform: uppercase;
     display: flex; align-items: center; gap: 7px;
   }
   .ar-true-badge::before {
     content: ''; width: 7px; height: 7px; border-radius: 50%;
     background: var(--accent2); box-shadow: 0 0 8px var(--accent2);
-    animation: blink 1.4s infinite;
+    animation: blink 1.4s infinite; flex-shrink: 0;
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
+  .splash-feats {
+    display: flex; gap: 14px; margin-top: 20px; position: relative;
+    z-index: 1; flex-wrap: wrap; justify-content: center;
+  }
+  .splash-feat {
+    text-align: center; font-size: 9px; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .splash-feat span { font-size: 20px; }
   .splash-btn {
-    margin-top: 30px; position: relative; z-index: 1;
+    margin-top: 24px; position: relative; z-index: 1;
     background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,157,0.08));
     border: 1.5px solid var(--accent); color: var(--accent);
-    font-family: 'Space Mono', monospace; font-size: 12px; padding: 14px 48px;
-    border-radius: 3px; cursor: pointer; letter-spacing: 0.1em;
-    transition: all 0.2s; text-transform: uppercase;
+    font-family: 'Space Mono', monospace; font-size: clamp(11px,3vw,13px);
+    padding: 13px 40px; border-radius: 3px; cursor: pointer;
+    letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; width: 100%; max-width: 300px;
   }
-  .splash-btn:hover { background: rgba(0,212,255,0.22); box-shadow: 0 0 36px rgba(0,212,255,0.22); }
+  .splash-btn:active { background: rgba(0,212,255,0.25); }
 
   /* ── APP SHELL ── */
-  #app { display: none; flex-direction: column; min-height: 100vh; }
+  #app { display: none; flex-direction: column; height: 100%; width: 100%; position: fixed; inset: 0; }
   #app.visible { display: flex; }
 
   /* ── HEADER ── */
   .hdr {
-    padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border); background: rgba(8,24,40,0.97);
-    backdrop-filter: blur(12px); position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+    height: var(--hdr-h);
+    padding: 0 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,24,40,0.98);
+    z-index: 500; flex-shrink: 0;
   }
   .logo {
-    font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+    font-family: 'Syne', sans-serif; font-size: clamp(16px,5vw,20px); font-weight: 800;
     background: linear-gradient(135deg, #fff, var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .logo em { -webkit-text-fill-color: var(--accent2); font-style: normal; }
-  .hdr-right { display: flex; align-items: center; gap: 10px; }
   .status {
-    display: flex; align-items: center; gap: 6px;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'Space Mono', monospace; font-size: 8px; color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.06em;
     background: var(--surface); border: 1px solid var(--border);
-    padding: 4px 10px; border-radius: 20px;
+    padding: 4px 9px; border-radius: 20px;
   }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: all 0.3s; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: all 0.3s; flex-shrink: 0; }
   .dot.ready   { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); animation: blink 2s infinite; }
   .dot.scanning{ background: var(--accent);  box-shadow: 0 0 8px var(--accent);  animation: blink 0.8s infinite; }
   .dot.found   { background: var(--accent2); box-shadow: 0 0 14px var(--accent2); animation: none; }
@@ -127,51 +128,67 @@
 
   /* ── MODE TABS ── */
   .mode-tabs {
-    display: flex; background: var(--surface); border-bottom: 1px solid var(--border);
-    position: fixed; top: 44px; left: 0; right: 0; z-index: 499;
+    height: var(--tab-h);
+    display: flex; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   .mtab {
-    flex: 1; padding: 9px 8px; display: flex; align-items: center; justify-content: center;
-    gap: 6px; font-family: 'Space Mono', monospace; font-size: 9px;
-    text-transform: uppercase; letter-spacing: 0.06em;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: 6px; font-family: 'Space Mono', monospace; font-size: clamp(8px,2.2vw,9px);
+    text-transform: uppercase; letter-spacing: 0.05em;
     color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
   }
   .mtab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,212,255,0.04); }
   .mtab-icon { font-size: 14px; }
 
-  /* ── PAGE CONTENT OFFSET ── */
-  .page-content { padding-top: 82px; flex: 1; display: flex; flex-direction: column; }
+  /* ── CONTENT AREA (below header + tabs) ── */
+  .content-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
 
-  /* ══════════════════════════════════════════════
-     AR MODE — True WebAR with A-Frame + AR.js
-  ══════════════════════════════════════════════ */
+  /* ═══════════════════════════════════
+     AR LIVE MODE — Real camera feed
+  ═══════════════════════════════════ */
   #arModePanel {
-    display: flex; flex-direction: column; flex: 1; position: relative;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+  }
+  #arModePanel.hidden { display: none; }
+
+  /* Camera viewport — fills all available space */
+  #camViewport {
+    position: relative; flex: 1; overflow: hidden; background: #000;
+    display: flex; align-items: center; justify-content: center;
   }
 
-  /* A-Frame scene container */
-  #arSceneWrap {
-    position: relative; width: 100%; height: calc(100vh - 82px);
-    overflow: hidden; background: #000;
+  /* The actual video — covers the viewport, object-fit like a background */
+  #camVideo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
-  /* A-Frame itself */
-  #arScene {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-  }
-
-  /* ZXing overlay canvas (hidden, used for decoding) */
+  /* Hidden canvas for ZXing decode */
   #decodeCanvas { display: none; }
 
-  /* AR scan frame overlay (on top of A-Frame) */
+  /* AR scan frame overlay */
   .ar-hud {
     position: absolute; inset: 0; pointer-events: none;
     display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
   }
-  .frame-box {
-    width: min(260px, 72vw); height: 150px; position: relative;
+  /* Darkened corners to focus attention */
+  .ar-hud::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 55% 38% at 50% 50%, transparent 40%, rgba(2,12,22,0.55) 100%);
   }
-  .c { position: absolute; width: 26px; height: 26px; border-color: var(--accent); border-style: solid; border-width: 0; }
+  .frame-box {
+    width: min(260px, 72vw); height: min(150px, 42vw); position: relative; z-index: 1;
+  }
+  .c { position: absolute; width: 24px; height: 24px; border-color: var(--accent); border-style: solid; border-width: 0; }
   .c.tl{top:0;left:0;border-top-width:3px;border-left-width:3px;border-radius:3px 0 0 0;}
   .c.tr{top:0;right:0;border-top-width:3px;border-right-width:3px;border-radius:0 3px 0 0;}
   .c.bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 3px;}
@@ -180,327 +197,232 @@
     position: absolute; left: 6px; right: 6px; height: 2px;
     background: linear-gradient(90deg, transparent, var(--accent2), transparent);
     box-shadow: 0 0 12px var(--accent2);
-    animation: smove 2.4s ease-in-out infinite;
+    animation: smove 2.2s ease-in-out infinite;
   }
   @keyframes smove { 0%{top:4px;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:calc(100% - 4px);opacity:0} }
 
   .scan-hint {
-    margin-top: 14px; font-family: 'Space Mono', monospace; font-size: 10px;
-    color: rgba(255,255,255,0.55); letter-spacing: 0.08em; text-transform: uppercase; text-align: center;
+    margin-top: 12px; font-family: 'Space Mono', monospace; font-size: clamp(9px,2.5vw,11px);
+    color: rgba(255,255,255,0.7); letter-spacing: 0.07em; text-transform: uppercase;
+    text-align: center; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
   }
-  .scan-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+  .scan-tags { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; justify-content: center; z-index: 1; }
   .stag {
-    font-family: 'Space Mono', monospace; font-size: 8px; padding: 2px 8px; border-radius: 2px;
-    border: 1px solid rgba(0,212,255,0.25); color: rgba(0,212,255,0.6); background: rgba(0,212,255,0.06);
+    font-family: 'Space Mono', monospace; font-size: 7px; padding: 2px 7px; border-radius: 2px;
+    border: 1px solid rgba(0,212,255,0.3); color: rgba(0,212,255,0.7);
+    background: rgba(2,12,22,0.6);
   }
 
-  /* AR camera controls */
+  /* AR mode pill */
+  .ar-mode-pill {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    z-index: 20; background: rgba(2,12,22,0.7); border: 1px solid rgba(0,212,255,0.4);
+    border-radius: 20px; padding: 4px 12px;
+    font-family: 'Space Mono', monospace; font-size: 8px; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px; pointer-events: none;
+    backdrop-filter: blur(6px);
+  }
+  .ar-mode-pill-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: blink 1s infinite;
+  }
+
+  /* Camera controls overlay */
   .cam-btns {
     position: absolute; top: 10px; right: 10px;
-    display: flex; flex-direction: column; gap: 6px; z-index: 20; pointer-events: all;
+    display: flex; flex-direction: column; gap: 7px; z-index: 20; pointer-events: all;
   }
   .cbtn {
-    width: 40px; height: 40px; border-radius: 50%; background: rgba(8,24,40,0.88);
-    border: 1px solid var(--border); color: var(--text); font-size: 17px;
+    width: 40px; height: 40px; border-radius: 50%; background: rgba(8,24,40,0.82);
+    border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-size: 16px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; backdrop-filter: blur(4px); transition: all 0.2s;
+    cursor: pointer; backdrop-filter: blur(6px); transition: all 0.2s; user-select: none;
   }
-  .cbtn:hover { border-color: var(--accent); }
-  .cbtn.on { border-color: var(--accent2); background: rgba(0,255,157,0.12); }
+  .cbtn:active { transform: scale(0.92); }
+  .cbtn.on { border-color: var(--accent2); background: rgba(0,255,157,0.15); }
 
-  /* ── 3D AR Info Card (HTML overlay positioned via canvas coords) ── */
+  /* Search toggle */
+  #searchToggle {
+    position: absolute; top: 10px; left: 10px; z-index: 20;
+    width: 40px; height: 40px; border-radius: 50%; background: rgba(8,24,40,0.82);
+    border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(6px); transition: all 0.2s;
+  }
+  #searchToggle:active { transform: scale(0.92); }
+
+  /* ── Camera permission prompt ── */
+  #camPermPrompt {
+    position: absolute; inset: 0; background: rgba(2,12,22,0.97);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; z-index: 50; padding: 28px; text-align: center;
+  }
+  #camPermPrompt.hidden { display: none; }
+  .cp-icon { font-size: 44px; }
+  .cp-title { font-family: 'Syne', sans-serif; font-size: clamp(18px,5vw,22px); color: #fff; }
+  .cp-sub { font-size: 12px; color: var(--muted); line-height: 1.65; max-width: 280px; }
+  .cp-btn {
+    background: var(--accent); color: #000; border: none; border-radius: 4px;
+    padding: 13px 28px; font-family: 'Space Mono', monospace; font-size: 11px;
+    font-weight: 700; cursor: pointer; letter-spacing: 0.05em; width: 100%; max-width: 280px;
+  }
+  .cp-err { font-size: 11px; color: var(--danger); display: none; margin-top: -8px; }
+
+  /* ── 3D AR Floating Info Card ── */
   #ar3DCard {
-    position: absolute;
-    pointer-events: none;
-    z-index: 30;
-    transform: translate(-50%, -100%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    position: absolute; pointer-events: none; z-index: 30;
+    transform: translate(-50%, calc(-100% - 44px));
+    opacity: 0; transition: opacity 0.35s ease;
     will-change: transform, opacity;
+    /* prevent going off-screen */
+    max-width: min(280px, 88vw);
   }
   #ar3DCard.show { opacity: 1; pointer-events: all; }
-
   .ar3d-inner {
-    background: rgba(2, 14, 26, 0.92);
+    background: rgba(2, 14, 26, 0.94);
     border: 1.5px solid rgba(0, 212, 255, 0.55);
     border-radius: 10px;
-    min-width: 230px;
-    max-width: 280px;
-    backdrop-filter: blur(16px);
-    box-shadow:
-      0 0 0 1px rgba(0,212,255,0.12),
-      0 8px 40px rgba(0,0,0,0.7),
-      0 0 60px rgba(0,212,255,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.06);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.1), 0 8px 40px rgba(0,0,0,0.7), 0 0 60px rgba(0,212,255,0.07);
     overflow: hidden;
-    animation: cardIn 0.45s cubic-bezier(0.16,1,0.3,1);
+    animation: cardIn 0.4s cubic-bezier(0.16,1,0.3,1);
   }
-  @keyframes cardIn {
-    from { transform: scale(0.82) translateY(12px); opacity: 0; }
-    to   { transform: scale(1) translateY(0); opacity: 1; }
-  }
-
-  /* Tether line from card bottom to target point */
-  .tether {
-    width: 2px; height: 36px;
-    background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0));
-    margin: 0 auto;
-    box-shadow: 0 0 8px rgba(0,212,255,0.3);
-  }
-  .tether-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent); box-shadow: 0 0 12px var(--accent);
-    margin: 0 auto; animation: tdot 1.2s ease-in-out infinite;
-  }
+  @keyframes cardIn { from{transform:scale(0.82) translateY(10px);opacity:0} to{transform:scale(1);opacity:1} }
+  .tether { width: 2px; height: 30px; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0)); margin: 0 auto; }
+  .tether-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); margin: 0 auto; animation: tdot 1.2s ease-in-out infinite; }
   @keyframes tdot { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
-
   .ar3d-top {
-    padding: 11px 14px 8px;
+    padding: 10px 13px 8px;
     border-bottom: 1px solid rgba(0,212,255,0.12);
     background: linear-gradient(135deg, rgba(0,212,255,0.07), rgba(0,255,157,0.03));
   }
-  .ar3d-brand {
-    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
-    color: #fff; line-height: 1.2; letter-spacing: 0.01em;
-  }
-  .ar3d-gen {
-    font-size: 10px; color: var(--muted); font-style: italic; margin-top: 2px;
-  }
-  .ar3d-badge {
-    display: inline-block; margin-top: 5px;
-    font-family: 'Space Mono', monospace; font-size: 7px;
-    padding: 2px 8px; border-radius: 2px; letter-spacing: 0.08em; text-transform: uppercase;
-  }
+  .ar3d-brand { font-family: 'Syne', sans-serif; font-size: clamp(13px,4vw,15px); font-weight: 800; color: #fff; line-height: 1.2; }
+  .ar3d-gen { font-size: 9px; color: var(--muted); font-style: italic; margin-top: 2px; }
+  .ar3d-badge { display: inline-block; margin-top: 4px; font-family: 'Space Mono', monospace; font-size: 7px; padding: 2px 7px; border-radius: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
   .ar3d-badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
   .ar3d-badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
-
-  .ar3d-chips {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px; padding: 9px 12px;
-    border-bottom: 1px solid rgba(0,212,255,0.08);
-  }
+  .ar3d-chips { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; padding: 8px 11px; border-bottom: 1px solid rgba(0,212,255,0.08); }
   .ar3d-chip { text-align: center; }
-  .ar3d-chip-l {
-    font-family: 'Space Mono', monospace; font-size: 7px;
-    color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .ar3d-chip-v { font-size: 10px; color: var(--text); margin-top: 2px; font-weight: 500; line-height: 1.3; }
-
-  .ar3d-purpose {
-    padding: 9px 14px;
-    font-size: 10.5px; color: var(--muted); line-height: 1.6;
-    border-bottom: 1px solid rgba(0,212,255,0.08);
-    max-height: 80px; overflow: hidden;
-  }
-  .ar3d-slbl {
-    font-family: 'Space Mono', monospace; font-size: 7px;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--accent); margin-bottom: 4px;
-  }
-
-  .ar3d-warn {
-    padding: 7px 14px; background: rgba(255,204,0,0.05);
-    border-bottom: 1px solid rgba(255,204,0,0.1);
-    font-size: 10px; color: rgba(255,220,80,0.85); line-height: 1.5;
-    display: none;
-  }
+  .ar3d-chip-l { font-family: 'Space Mono', monospace; font-size: 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .ar3d-chip-v { font-size: clamp(9px,2.5vw,10px); color: var(--text); margin-top: 2px; font-weight: 500; line-height: 1.3; }
+  .ar3d-purpose { padding: 8px 13px; font-size: 9.5px; color: var(--muted); line-height: 1.55; border-bottom: 1px solid rgba(0,212,255,0.08); max-height: 72px; overflow: hidden; }
+  .ar3d-slbl { font-family: 'Space Mono', monospace; font-size: 7px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 3px; }
+  .ar3d-warn { padding: 6px 13px; background: rgba(255,204,0,0.05); border-bottom: 1px solid rgba(255,204,0,0.1); font-size: 9px; color: rgba(255,220,80,0.85); line-height: 1.5; display: none; }
   .ar3d-warn.show { display: block; }
-
-  .ar3d-footer {
-    padding: 7px 14px; display: flex; align-items: center; justify-content: space-between;
-  }
-  .ar3d-code {
-    font-family: 'Space Mono', monospace; font-size: 8px;
-    color: rgba(0,212,255,0.4); letter-spacing: 0.04em;
-  }
+  .ar3d-footer { padding: 7px 13px; display: flex; align-items: center; justify-content: space-between; }
+  .ar3d-code { font-family: 'Space Mono', monospace; font-size: 7px; color: rgba(0,212,255,0.4); letter-spacing: 0.04em; }
   .ar3d-detail-btn {
     font-family: 'Space Mono', monospace; font-size: 8px; padding: 4px 10px;
     background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
     color: var(--accent); border-radius: 3px; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.2s; pointer-events: all;
+    text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; pointer-events: all;
   }
-  .ar3d-detail-btn:hover { background: rgba(0,212,255,0.2); }
+  .ar3d-detail-btn:active { background: rgba(0,212,255,0.22); }
 
   /* ── UPLOAD MODE ── */
-  #uploadPanel { display: none; padding: 16px; flex: 1; overflow-y: auto; }
-
+  #uploadPanel {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    overflow-y: auto; padding: 14px; gap: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #uploadPanel.visible { display: flex; }
   .drop-zone {
     border: 2px dashed var(--border); border-radius: 8px;
-    padding: 32px 20px; text-align: center; cursor: pointer;
-    transition: all 0.25s; position: relative; background: var(--surface);
+    padding: 28px 18px; text-align: center; cursor: pointer;
+    transition: all 0.25s; position: relative; background: var(--surface); flex-shrink: 0;
   }
-  .drop-zone.dragover {
-    border-color: var(--accent); background: rgba(0,212,255,0.06);
-    box-shadow: 0 0 24px rgba(0,212,255,0.1);
-  }
-  .drop-zone:hover { border-color: var(--accent); }
+  .drop-zone.dragover { border-color: var(--accent); background: rgba(0,212,255,0.06); }
   #imgFileInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .dz-icon { font-size: 38px; margin-bottom: 10px; }
-  .dz-title { font-family: 'Syne', sans-serif; font-size: 15px; color: #fff; margin-bottom: 5px; }
-  .dz-sub { font-size: 11px; color: var(--muted); line-height: 1.6; }
-  .dz-or {
-    display: flex; align-items: center; gap: 10px; margin: 14px 0;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase;
-  }
+  .dz-icon { font-size: 34px; margin-bottom: 8px; }
+  .dz-title { font-family: 'Syne', sans-serif; font-size: 14px; color: #fff; margin-bottom: 4px; }
+  .dz-sub { font-size: 11px; color: var(--muted); line-height: 1.55; }
+  .dz-or { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; flex-shrink: 0; }
   .dz-or::before, .dz-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
   .cam-capture-btn {
     width: 100%; background: rgba(0,212,255,0.08); border: 1.5px solid rgba(0,212,255,0.3);
     color: var(--accent); border-radius: 6px; padding: 12px;
-    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.07em;
     cursor: pointer; text-transform: uppercase;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all 0.2s; position: relative;
+    transition: all 0.2s; position: relative; flex-shrink: 0;
   }
-  .cam-capture-btn:hover { background: rgba(0,212,255,0.14); }
   #captureInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-
-  #imgPreviewWrap { display: none; margin-top: 14px; }
-  .preview-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
-  }
-  .preview-top {
-    position: relative; background: #000;
-    display: flex; align-items: center; justify-content: center;
-    min-height: 160px; max-height: 280px; overflow: hidden;
-  }
-  #previewImg { max-width: 100%; max-height: 280px; display: block; object-fit: contain; }
-  .preview-scan-overlay {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(2,12,22,0.7); flex-direction: column; gap: 10px;
-  }
+  #imgPreviewWrap { display: none; flex-shrink: 0; }
+  .preview-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .preview-top { position: relative; background: #000; display: flex; align-items: center; justify-content: center; min-height: 140px; max-height: 240px; overflow: hidden; }
+  #previewImg { max-width: 100%; max-height: 240px; display: block; object-fit: contain; }
+  .preview-scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2,12,22,0.75); flex-direction: column; gap: 10px; }
   .preview-scan-overlay.hidden { display: none; }
-  .pspin {
-    width: 28px; height: 28px; border: 3px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
-  }
+  .pspin { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .pspin-txt { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.06em; }
-  .preview-result {
-    padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  }
-  .pr-code { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); word-break: break-all; }
-  .pr-fmt {
-    font-family: 'Space Mono', monospace; font-size: 8px; padding: 2px 7px; border-radius: 2px;
-    background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); white-space: nowrap;
-  }
+  .preview-result { padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .pr-code { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); word-break: break-all; }
+  .pr-fmt { font-family: 'Space Mono', monospace; font-size: 8px; padding: 2px 7px; border-radius: 2px; background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); white-space: nowrap; }
   .pr-err { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--danger); }
-  .clear-btn {
-    margin-top: 10px; width: 100%; background: transparent; border: 1px solid var(--border);
-    color: var(--muted); border-radius: 4px; padding: 9px;
-    font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase;
-    letter-spacing: 0.07em; cursor: pointer; transition: all 0.2s;
-  }
-  .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
-
-  .tips-box {
-    margin-top: 14px; background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.12);
-    border-radius: 6px; padding: 12px 14px;
-  }
-  .tips-title {
-    font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px;
-  }
-  .tip { font-size: 11px; color: var(--muted); line-height: 1.55; display: flex; gap: 7px; margin-bottom: 4px; }
+  .clear-btn { margin-top: 8px; width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 9px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer; }
+  .tips-box { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.12); border-radius: 6px; padding: 11px 13px; flex-shrink: 0; }
+  .tips-title { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 7px; }
+  .tip { font-size: 11px; color: var(--muted); line-height: 1.5; display: flex; gap: 6px; margin-bottom: 3px; }
   .tip::before { content: '›'; color: var(--accent); flex-shrink: 0; }
+  #histWrapUpload { flex-shrink: 0; padding-bottom: 14px; }
 
-  /* ── DETAIL DRAWER (slides up from bottom) ── */
+  /* ── DETAIL DRAWER ── */
   #detailDrawer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
     background: var(--surface); border-top: 1.5px solid var(--border);
     border-radius: 16px 16px 0 0;
-    max-height: 75vh; overflow-y: auto;
+    max-height: 78vh; overflow-y: auto;
     transform: translateY(100%);
-    transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
     box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
+    -webkit-overflow-scrolling: touch;
   }
   #detailDrawer.open { transform: translateY(0); }
-
-  .drawer-handle {
-    width: 40px; height: 4px; background: var(--border); border-radius: 2px;
-    margin: 12px auto 0; cursor: pointer;
-  }
-  .drawer-close {
-    position: absolute; top: 10px; right: 16px;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted);
-    cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em;
-    background: var(--card); border: 1px solid var(--border);
-    padding: 4px 10px; border-radius: 3px; transition: all 0.2s;
-  }
-  .drawer-close:hover { color: var(--danger); border-color: var(--danger); }
-
-  .dhead {
-    padding: 12px 16px; border-bottom: 1px solid var(--border);
-    background: rgba(0,212,255,0.04); margin-top: 8px;
-    display: flex; align-items: flex-start; justify-content: space-between;
-  }
-  .dname { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
+  #detailBackdrop { position: fixed; inset: 0; z-index: 599; background: rgba(0,0,0,0.5); display: none; }
+  #detailBackdrop.show { display: block; }
+  .drawer-handle { width: 38px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; cursor: pointer; }
+  .drawer-close { position: absolute; top: 10px; right: 14px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; background: var(--card); border: 1px solid var(--border); padding: 4px 9px; border-radius: 3px; }
+  .dhead { padding: 10px 15px; border-bottom: 1px solid var(--border); background: rgba(0,212,255,0.03); margin-top: 6px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .dname { font-family: 'Syne', sans-serif; font-size: clamp(16px,5vw,19px); font-weight: 700; color: #fff; }
   .dgen { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 2px; }
-  .badge {
-    font-family: 'Space Mono', monospace; font-size: 8px; padding: 3px 9px;
-    border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; margin-left: 8px;
-  }
+  .badge { font-family: 'Space Mono', monospace; font-size: 7px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; margin-top: 3px; }
   .badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
   .badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
-
-  .tabs {
-    display: flex; border-bottom: 1px solid var(--border);
-    overflow-x: auto; scrollbar-width: none;
-  }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 9px 16px; font-family: 'Space Mono', monospace; font-size: 9.5px;
-    text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
-    cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
-    transition: all 0.2s; flex-shrink: 0;
-  }
+  .tab { padding: 9px 14px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .pane { display: none; padding: 14px 16px; }
+  .pane { display: none; padding: 13px 15px; }
   .pane.active { display: block; }
-
-  .igrid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 12px; }
-  .ibox {
-    background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px;
-  }
-  .ilbl {
-    font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase;
-    letter-spacing: 0.05em; color: var(--muted); margin-bottom: 3px;
-  }
-  .ival { font-size: 12px; color: var(--text); font-weight: 500; line-height: 1.3; }
+  .igrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 11px; }
+  .ibox { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 11px; }
+  .ilbl { font-family: 'Space Mono', monospace; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 2px; }
+  .ival { font-size: 11px; color: var(--text); font-weight: 500; line-height: 1.3; }
   .ival.c1{color:var(--accent)} .ival.c2{color:var(--accent2)} .ival.c3{color:var(--accent3)}
-
-  .slbl {
-    font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase;
-    letter-spacing: 0.07em; color: var(--accent); margin: 12px 0 6px;
-  }
+  .slbl { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); margin: 11px 0 5px; }
   .slbl:first-child { margin-top: 0; }
-  .prose { font-size: 12.5px; color: var(--text); line-height: 1.65; }
+  .prose { font-size: 12px; color: var(--text); line-height: 1.62; }
+  .wbox { background: rgba(255,204,0,0.07); border: 1px solid rgba(255,204,0,0.2); border-radius: 4px; padding: 9px 11px; margin-bottom: 7px; display: flex; gap: 7px; }
+  .wico { font-size: 13px; flex-shrink: 0; }
+  .wtxt { font-size: 11px; color: rgba(255,220,80,0.9); line-height: 1.5; }
+  .dbox { background: rgba(255,68,102,0.07); border: 1px solid rgba(255,68,102,0.22); border-radius: 4px; padding: 9px 11px; margin-bottom: 7px; display: flex; gap: 7px; }
+  .dtxt { font-size: 11px; color: rgba(255,110,140,0.9); line-height: 1.5; }
 
-  .wbox {
-    background: rgba(255,204,0,0.07); border: 1px solid rgba(255,204,0,0.2);
-    border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px;
-  }
-  .wico { font-size: 14px; flex-shrink: 0; }
-  .wtxt { font-size: 12px; color: rgba(255,220,80,0.9); line-height: 1.55; }
-  .dbox {
-    background: rgba(255,68,102,0.07); border: 1px solid rgba(255,68,102,0.22);
-    border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px;
-  }
-  .dtxt { font-size: 12px; color: rgba(255,110,140,0.9); line-height: 1.55; }
-
-  /* ── SEARCH BAR (search mode, accessible from drawer) ── */
+  /* ── Search bar ── */
   #searchBar {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 700;
-    padding: 10px 14px 10px;
-    background: rgba(8,24,40,0.97);
+    padding: 10px 12px;
+    background: rgba(8,24,40,0.98);
     border-top: 1px solid var(--border);
-    display: flex; gap: 8px;
-    backdrop-filter: blur(10px);
+    display: flex; gap: 7px;
+    backdrop-filter: blur(12px);
   }
   .sinput {
     flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 4px; padding: 10px 14px; color: var(--text);
+    border-radius: 4px; padding: 10px 12px; color: var(--text);
     font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
     transition: border-color 0.2s;
   }
@@ -508,102 +430,51 @@
   .sinput::placeholder { color: var(--muted); }
   .sbtn {
     background: var(--accent); color: #000; border: none; border-radius: 4px;
-    padding: 10px 16px; font-family: 'Space Mono', monospace; font-size: 11px;
-    font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 10px;
+    font-weight: 700; cursor: pointer; white-space: nowrap;
   }
-  .sbtn:active { transform: scale(0.97); }
+  .sbtn.cancel { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
 
-  /* loading */
-  .loading { display: none; align-items: center; justify-content: center; gap: 10px; padding: 16px; }
-  .loading.show { display: flex; }
-  .spinner {
-    width: 18px; height: 18px; border: 2px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
-  }
-  .ltxt { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
-
-  /* history */
-  .hlbl {
-    font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase;
-    letter-spacing: 0.07em; color: var(--muted); margin-bottom: 7px;
-  }
-  .hitem {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; transition: border-color 0.2s; margin-bottom: 6px;
-  }
-  .hitem:hover { border-color: var(--accent); }
+  /* History */
+  .hlbl { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 7px; }
+  .hitem { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; margin-bottom: 5px; }
+  .hitem:active { border-color: var(--accent); }
   .hname { font-size: 13px; color: var(--text); font-weight: 500; }
   .hcode { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
 
-  /* toast */
+  /* Loading overlay */
+  #loadingOverlay {
+    position: fixed; inset: 0; z-index: 800;
+    background: rgba(2,12,22,0.75); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+  }
+  #loadingOverlay.show { display: flex; }
+  .lspinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .ltxt { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.06em; text-align: center; }
+
+  /* Toast */
   .toast {
-    position: fixed; top: 58px; left: 50%; transform: translateX(-50%) translateY(-14px);
-    background: rgba(2,12,22,0.95); border: 1px solid var(--border); color: var(--text);
-    padding: 9px 18px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 10px;
+    position: fixed; top: calc(var(--top-h) + 8px); left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: rgba(2,12,22,0.96); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 16px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 10px;
     opacity: 0; transition: all 0.3s; z-index: 1000; pointer-events: none;
-    white-space: nowrap; max-width: 92vw; text-align: center;
+    white-space: nowrap; max-width: 90vw; text-align: center; text-overflow: ellipsis; overflow: hidden;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.err { border-color: rgba(255,68,102,0.4); color: #ff8899; }
   .toast.ok  { border-color: rgba(0,255,157,0.4); color: var(--accent2); }
 
-  #flash {
-    position: fixed; inset: 0; background: rgba(0,255,157,0.07);
-    pointer-events: none; opacity: 0; z-index: 99;
-  }
+  #flash { position: fixed; inset: 0; background: rgba(0,255,157,0.07); pointer-events: none; opacity: 0; z-index: 99; }
   #flash.go { animation: fgo 0.5s ease; }
   @keyframes fgo { 0%{opacity:1} 100%{opacity:0} }
 
-  /* ── Search mode toggle ── */
-  #searchToggle {
-    width: 38px; height: 38px; border-radius: 50%; background: rgba(8,24,40,0.88);
-    border: 1px solid var(--border); color: var(--text); font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; backdrop-filter: blur(4px); transition: all 0.2s; pointer-events: all;
-    position: absolute; top: 10px; left: 10px; z-index: 20;
-  }
-  #searchToggle:hover { border-color: var(--accent); }
-
-  /* empty hist */
-  #histWrap { padding: 14px 16px 80px; }
-  .empty { text-align: center; padding: 24px 16px; color: var(--muted); }
-  .eico { font-size: 36px; opacity: 0.4; margin-bottom: 8px; }
-  .etxt { font-size: 13px; line-height: 1.6; }
-
-  /* ── Camera permission prompt ── */
-  #camPermPrompt {
-    position: absolute; inset: 0; background: rgba(2,12,22,0.96);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; z-index: 50; padding: 28px;
-  }
-  #camPermPrompt.hidden { display: none; }
-  .cp-icon { font-size: 48px; }
-  .cp-title { font-family: 'Syne', sans-serif; font-size: 20px; color: #fff; text-align: center; }
-  .cp-sub { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.65; max-width: 270px; }
-  .cp-btn {
-    background: var(--accent); color: #000; border: none; border-radius: 4px;
-    padding: 13px 30px; font-family: 'Space Mono', monospace; font-size: 11px;
-    font-weight: 700; cursor: pointer; letter-spacing: 0.05em;
-  }
-
-  /* ── AR mode info pill ── */
-  .ar-mode-pill {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    z-index: 20; background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.35);
-    border-radius: 20px; padding: 4px 14px;
-    font-family: 'Space Mono', monospace; font-size: 8px; color: var(--accent);
-    text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
-    display: flex; align-items: center; gap: 6px; pointer-events: none;
-  }
-  .ar-mode-pill-dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: blink 1s infinite;
-  }
-
-  @media(min-width:600px) {
+  @media(min-width:480px) {
     .igrid { grid-template-columns: repeat(3,1fr); }
-    #ar3DCard { max-width: 320px; }
+    .frame-box { width: 280px; height: 160px; }
+  }
+  @media(min-width:600px) {
+    #ar3DCard { max-width: 300px; }
   }
 </style>
 </head>
@@ -612,15 +483,22 @@
 <div class="toast" id="toast"></div>
 <canvas id="decodeCanvas"></canvas>
 
-<!-- ══════════════════════════════════ SPLASH ══════════════════════════════════ -->
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="lspinner"></div>
+  <div class="ltxt" id="ltxt">Looking up…</div>
+</div>
+
+<!-- Detail backdrop -->
+<div id="detailBackdrop" onclick="closeDetailDrawer()"></div>
+
+<!-- ══════════════════════════════════════ SPLASH ══════════════════════════════════════ -->
 <div id="splash">
   <div class="splash-glow"></div>
   <div class="splash-icon">💊</div>
   <div class="splash-logo">AR·MediScan</div>
   <div class="splash-sub">Real-Time Medicine AR Scanner</div>
-  <div class="ar-true-badge">
-    <span>True WebAR — 3D Floating Info Cards</span>
-  </div>
+  <div class="ar-true-badge">Live Camera · Barcode Detection · FDA Data</div>
   <div class="splash-feats">
     <div class="splash-feat"><span>⬛</span>DataMatrix</div>
     <div class="splash-feat"><span>📦</span>Barcodes</div>
@@ -631,13 +509,11 @@
   <button class="splash-btn" onclick="startApp()">► Launch Scanner</button>
 </div>
 
-<!-- ══════════════════════════════════ APP ══════════════════════════════════ -->
+<!-- ══════════════════════════════════════ APP ══════════════════════════════════════ -->
 <div id="app">
   <div class="hdr">
     <div class="logo">AR·<em>Medi</em>Scan</div>
-    <div class="hdr-right">
-      <div class="status"><div class="dot" id="dot"></div><span id="stxt">Ready</span></div>
-    </div>
+    <div class="status"><div class="dot" id="dot"></div><span id="stxt">Ready</span></div>
   </div>
 
   <div class="mode-tabs">
@@ -649,75 +525,30 @@
     </div>
   </div>
 
-  <div class="page-content">
+  <div class="content-area">
 
     <!-- ═══════════════ AR LIVE MODE ═══════════════ -->
     <div id="arModePanel">
-      <div id="arSceneWrap">
+      <div id="camViewport">
+
+        <!-- REAL camera video feed -->
+        <video id="camVideo" autoplay playsinline muted></video>
 
         <!-- Camera permission prompt -->
         <div id="camPermPrompt">
           <div class="cp-icon">📷</div>
           <div class="cp-title">Camera Access Needed</div>
-          <div class="cp-sub">AR-MediScan needs your camera to scan medicines in real-time. Your camera is never recorded or stored.</div>
-          <button class="cp-btn" onclick="startARCamera()">Allow Camera & Start AR</button>
+          <div class="cp-sub">AR-MediScan needs your camera to scan medicines in real-time. Your camera feed is never recorded or stored.</div>
+          <button class="cp-btn" onclick="startARCamera()">Allow Camera &amp; Start Scanning</button>
+          <div class="cp-err" id="cpErr">Permission denied. Use the Upload Image tab to scan from a photo.</div>
         </div>
 
-        <!-- A-Frame AR Scene -->
-        <a-scene
-          id="arScene"
-          embedded
-          arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
-          renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
-          vr-mode-ui="enabled: false"
-          style="display:none;"
-        >
-          <!-- Ambient light -->
-          <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
-          <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
-
-          <!-- Hiro marker — shows a 3D axis indicator when detected -->
-          <a-marker preset="hiro" id="hiroMarker">
-            <!-- Pulsing ring on the marker plane -->
-            <a-torus
-              id="markerRing"
-              position="0 0 0"
-              rotation="-90 0 0"
-              radius="0.4"
-              radius-tubular="0.015"
-              color="#00d4ff"
-              opacity="0.7"
-              animation="property: rotation; to: -90 0 360; loop: true; dur: 3000; easing: linear"
-            ></a-torus>
-            <!-- Small glowing sphere at center -->
-            <a-sphere
-              position="0 0.05 0"
-              radius="0.08"
-              color="#00ff9d"
-              opacity="0.9"
-              animation="property: scale; to: 1.4 1.4 1.4; loop: true; dur: 1200; dir: alternate; easing: easeInOutSine"
-            ></a-sphere>
-            <!-- Indicator lines -->
-            <a-box position="0 0.02 0" width="0.9" height="0.015" depth="0.015" color="#00d4ff" opacity="0.4"></a-box>
-            <a-box position="0 0.02 0" width="0.015" height="0.015" depth="0.9" color="#00d4ff" opacity="0.4"></a-box>
-          </a-marker>
-
-          <!-- Custom barcode marker (DATA_MATRIX style) -->
-          <a-marker type="barcode" value="0" id="barcodeMarker0">
-            <a-sphere position="0 0.1 0" radius="0.1" color="#00ff9d" opacity="0.85"
-              animation="property: scale; to: 1.3 1.3 1.3; loop: true; dur: 1000; dir: alternate; easing: easeInOutSine">
-            </a-sphere>
-          </a-marker>
-
-          <a-camera-static></a-camera-static>
-        </a-scene>
-
-        <!-- AR HUD overlay (on top of A-Frame) -->
+        <!-- AR HUD overlay -->
         <div class="ar-hud" id="arHud">
           <div class="frame-box">
             <div class="c tl"></div><div class="c tr"></div>
             <div class="c bl"></div><div class="c br"></div>
-            <div class="sline" id="scanLine"></div>
+            <div class="sline"></div>
           </div>
           <div class="scan-hint" id="scanHint">Align barcode · DataMatrix · QR</div>
           <div class="scan-tags">
@@ -731,7 +562,7 @@
         <!-- AR mode pill -->
         <div class="ar-mode-pill">
           <div class="ar-mode-pill-dot"></div>
-          True AR · 3D Card
+          Live AR Scan
         </div>
 
         <!-- Camera controls -->
@@ -743,12 +574,8 @@
         <!-- Search toggle -->
         <div id="searchToggle" onclick="openSearchDrawer()" title="Manual search">🔍</div>
 
-        <!-- ══════ TRUE AR 3D FLOATING CARD ══════
-             This HTML element is positioned in screen-space
-             above the detected barcode's projected 2D coordinates.
-             It mimics a 3D-anchored AR card via live canvas projection. -->
+        <!-- 3D AR Floating Info Card -->
         <div id="ar3DCard">
-          <!-- Tether line + dot (connects card to barcode position) -->
           <div class="tether"></div>
           <div class="tether-dot"></div>
           <div class="ar3d-inner">
@@ -757,14 +584,14 @@
               <div class="ar3d-gen" id="ar3dGen"></div>
               <div class="ar3d-badge otc" id="ar3dBadge">OTC</div>
             </div>
-            <div class="ar3d-chips" id="ar3dChips">
+            <div class="ar3d-chips">
               <div class="ar3d-chip"><div class="ar3d-chip-l">Route</div><div class="ar3d-chip-v" id="ar3dRoute">—</div></div>
               <div class="ar3d-chip"><div class="ar3d-chip-l">Form</div><div class="ar3d-chip-v" id="ar3dForm">—</div></div>
               <div class="ar3d-chip"><div class="ar3d-chip-l">Type</div><div class="ar3d-chip-v" id="ar3dType">—</div></div>
             </div>
             <div class="ar3d-purpose">
               <div class="ar3d-slbl">Purpose</div>
-              <div id="ar3dPurpose" style="font-size:10.5px;color:var(--muted);line-height:1.6;"></div>
+              <div id="ar3dPurpose" style="font-size:9.5px;color:var(--muted);line-height:1.55;"></div>
             </div>
             <div class="ar3d-warn" id="ar3dWarn">
               <div class="ar3d-slbl">⚠ Warning</div>
@@ -777,8 +604,11 @@
           </div>
         </div>
 
-      </div><!-- /arSceneWrap -->
-    </div><!-- /arModePanel -->
+      </div><!-- /camViewport -->
+
+      <!-- Scan history below camera (scrollable if content-area is taller) -->
+      <div id="histWrapLive" style="background:var(--bg);padding:12px 14px;display:none;overflow-y:auto;max-height:200px;"></div>
+    </div>
 
     <!-- ═══════════════ UPLOAD MODE ═══════════════ -->
     <div id="uploadPanel">
@@ -786,7 +616,7 @@
         <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFile(this.files[0])">
         <div class="dz-icon">🖼️</div>
         <div class="dz-title">Drop a medicine image here</div>
-        <div class="dz-sub">Supports JPG, PNG, WEBP · Works with any barcode, QR or DataMatrix on the packaging</div>
+        <div class="dz-sub">JPG, PNG, WEBP · Supports any barcode, QR or DataMatrix on packaging</div>
       </div>
 
       <div class="dz-or">or</div>
@@ -799,7 +629,7 @@
       <div id="imgPreviewWrap">
         <div class="preview-card">
           <div class="preview-top">
-            <img id="previewImg" alt="Uploaded medicine image">
+            <img id="previewImg" alt="">
             <div class="preview-scan-overlay" id="scanOverlay">
               <div class="pspin"></div>
               <div class="pspin-txt">Decoding barcode…</div>
@@ -812,25 +642,24 @@
 
       <div class="tips-box">
         <div class="tips-title">📌 Tips for best results</div>
-        <div class="tip">Take the photo in good lighting — avoid shadows over the barcode</div>
-        <div class="tip">Hold camera steady and close to the barcode (5–15 cm)</div>
-        <div class="tip">Make sure the full barcode is visible and not cut off</div>
-        <div class="tip">Works with EAN-13, UPC, QR codes, DataMatrix and Code128</div>
+        <div class="tip">Good lighting — avoid shadows over the barcode</div>
+        <div class="tip">Hold camera 5–15 cm from barcode, keep it steady</div>
+        <div class="tip">Full barcode must be visible — not cut off at edges</div>
+        <div class="tip">Works with EAN-13, UPC, QR, DataMatrix, Code128</div>
       </div>
 
-      <!-- History in upload mode -->
-      <div id="histWrapUpload" style="padding-top:14px;"></div>
+      <div id="histWrapUpload"></div>
     </div>
 
-  </div><!-- /page-content -->
+  </div><!-- /content-area -->
 </div><!-- /app -->
 
-<!-- ══════════════════════════════════
-     DETAIL DRAWER (full drug info)
-══════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     DETAIL DRAWER
+══════════════════════════════════════ -->
 <div id="detailDrawer">
   <div class="drawer-handle" onclick="closeDetailDrawer()"></div>
-  <div style="position:relative;">
+  <div style="position:relative;min-height:28px;">
     <div class="drawer-close" onclick="closeDetailDrawer()">✕ Close</div>
   </div>
   <div class="dhead">
@@ -849,7 +678,7 @@
     <div class="prose" id="purpose"></div>
   </div>
   <div class="pane" id="p-dosage">
-    <div class="slbl">Dosage & Administration</div>
+    <div class="slbl">Dosage &amp; Administration</div>
     <div class="prose" id="dosage"></div>
     <div class="slbl">Stop Use If</div>
     <div class="prose" id="stopuse"></div>
@@ -861,143 +690,142 @@
     <div class="slbl">Ask Doctor / Pharmacist</div>
     <div class="prose" id="askdoc"></div>
   </div>
-  <div style="height:20px;"></div>
+  <div style="height:24px;"></div>
 </div>
 
-<!-- Search drawer (manual search) -->
-<div id="searchDrawer" style="display:none;">
-  <div id="searchBar">
-    <input class="sinput" id="sinput" type="text"
-      placeholder="Type medicine name (e.g. ibuprofen)…"
-      onkeydown="if(event.key==='Enter')doSearch()">
-    <button class="sbtn" onclick="doSearch()">Search</button>
-    <button class="sbtn" style="background:var(--surface);color:var(--muted);border:1px solid var(--border);" onclick="closeSearchDrawer()">✕</button>
-  </div>
-  <div class="loading" id="loading" style="position:fixed;bottom:60px;left:0;right:0;background:var(--surface);z-index:710;">
-    <div class="spinner"></div>
-    <span class="ltxt" id="ltxt">Looking up…</span>
-  </div>
+<!-- Search bar -->
+<div id="searchBar" style="display:none;">
+  <input class="sinput" id="sinput" type="text" placeholder="Type medicine name…" onkeydown="if(event.key==='Enter')doSearch()">
+  <button class="sbtn" onclick="doSearch()">Go</button>
+  <button class="sbtn cancel" onclick="closeSearchDrawer()">✕</button>
 </div>
-
-<!-- History (under AR view, accessible via scroll or search) -->
-<div id="histWrap" style="display:none; padding: 14px 16px 80px; background: var(--bg);"></div>
-
 
 <script>
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    STATE
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 let activeStream = null;
-let arReader = null;
 let facing = 'environment';
 let torchOn = false;
 let lastCode = '';
 let cooldown = false;
 let currentDrug = null;
-let scanAnimId = null;
 let currentMode = 'live';
 let arStarted = false;
-
-// Barcode position tracking for 3D card placement
-let barcodeScreenX = 50; // %
-let barcodeScreenY = 50; // %
 let cardVisible = false;
+let barcodeScreenX = 50, barcodeScreenY = 50;
+let frameIntervalId = null;
+let cardAnimId = null;
 
 let hist = [];
-try { hist = JSON.parse(localStorage.getItem('mh3') || '[]'); } catch(_){}
+try { hist = JSON.parse(localStorage.getItem('mh3') || '[]'); } catch(_) {}
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    SPLASH
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function startApp() {
-  document.getElementById('splash').classList.add('fade-out');
+  const splash = document.getElementById('splash');
+  splash.classList.add('fade-out');
   setTimeout(() => {
-    document.getElementById('splash').style.display = 'none';
+    splash.style.display = 'none';
     document.getElementById('app').classList.add('visible');
     renderHist();
-    // Auto-check permission
+    // Check if permission already granted
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'camera' }).then(res => {
-        if (res.state === 'granted') { hideCamPermPrompt(); startARCamera(); }
+        if (res.state === 'granted') startARCamera();
       }).catch(() => {});
     }
-  }, 650);
+  }, 600);
 }
 
-/* ══════════════════════════════════════════════════════
-   MODE
-══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   MODE SWITCH
+══════════════════════════════════════════ */
 function switchMode(mode) {
   currentMode = mode;
-  document.getElementById('mtab-live').classList.toggle('active', mode === 'live');
-  document.getElementById('mtab-upload').classList.toggle('active', mode === 'upload');
-  document.getElementById('arModePanel').style.display = mode === 'live' ? 'block' : 'none';
-  document.getElementById('uploadPanel').style.display = mode === 'upload' ? 'block' : 'none';
+  ['live','upload'].forEach(m => {
+    document.getElementById('mtab-' + m).classList.toggle('active', m === mode);
+  });
+  document.getElementById('arModePanel').classList.toggle('hidden', mode !== 'live');
+  document.getElementById('uploadPanel').classList.toggle('visible', mode === 'upload');
   if (mode === 'upload') renderHistIn('histWrapUpload');
 }
 
-/* ══════════════════════════════════════════════════════
-   AR CAMERA SETUP
-══════════════════════════════════════════════════════ */
-function hideCamPermPrompt() {
-  document.getElementById('camPermPrompt').classList.add('hidden');
-}
-
+/* ══════════════════════════════════════════
+   CAMERA SETUP — proper getUserMedia + video element
+══════════════════════════════════════════ */
 async function startARCamera() {
   if (arStarted) return;
-  setS('ready', 'Starting AR…');
+  setS('ready', 'Starting…');
+
+  const video = document.getElementById('camVideo');
+  const prompt = document.getElementById('camPermPrompt');
+
   try {
-    activeStream = await navigator.mediaDevices.getUserMedia({
+    // Stop any existing stream
+    if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
+
+    const constraints = {
       video: {
-        facingMode: facing,
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
+        facingMode: { ideal: facing },
+        width:  { ideal: 1280, min: 640 },
+        height: { ideal: 720,  min: 480 },
+        frameRate: { ideal: 30 }
+      },
+      audio: false
+    };
+
+    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    // Attach stream directly to video element
+    video.srcObject = activeStream;
+
+    // Wait for video to be ready
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = () => {
+        video.play().then(resolve).catch(reject);
+      };
+      video.onerror = reject;
+      setTimeout(resolve, 3000); // fallback
     });
-    hideCamPermPrompt();
 
-    // Show A-Frame scene (it auto-uses webcam via AR.js sourceType:webcam)
-    // We also run ZXing on the stream for barcode detection
-    const scene = document.getElementById('arScene');
-    scene.style.display = 'block';
-
+    prompt.classList.add('hidden');
     arStarted = true;
     setS('scanning', 'Scanning…');
-    startZXingOnStream(activeStream);
-
-    // Start 3D card position animation loop
-    startCardPositionLoop();
+    startZXing();
+    startCardLoop();
 
   } catch(e) {
-    if (e.name === 'NotAllowedError') {
+    console.error('Camera error:', e);
+    arStarted = false;
+    const errEl = document.getElementById('cpErr');
+    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
       setS('err', 'Denied');
-      showToast('Camera denied. Use Upload Image tab instead ↑', 'err');
-      document.querySelector('.cp-sub').textContent =
-        'Permission denied. Switch to "Upload Image" tab to scan from a photo.';
+      errEl.style.display = 'block';
+      errEl.textContent = 'Camera permission denied. Please allow camera access in your browser settings, or use the Upload Image tab.';
+      showToast('Camera denied — use Upload Image tab', 'err');
     } else if (e.name === 'NotFoundError') {
       setS('err', 'No camera');
-      showToast('No camera found — use Upload Image tab', 'err');
-      hideCamPermPrompt();
+      errEl.style.display = 'block';
+      errEl.textContent = 'No camera found on this device. Use the Upload Image tab to scan a photo.';
+      showToast('No camera found', 'err');
     } else {
       setS('err', 'Camera error');
-      showToast('Camera unavailable. Use Upload Image tab', 'err');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Camera unavailable (' + (e.message || e.name) + '). Try the Upload Image tab.';
+      showToast('Camera error — try Upload Image tab', 'err');
     }
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   ZXING BARCODE DETECTION (runs on live stream via canvas)
-══════════════════════════════════════════════════════ */
-function startZXingOnStream(stream) {
-  // We create a hidden video element to draw frames for ZXing
-  const hiddenVid = document.createElement('video');
-  hiddenVid.srcObject = stream;
-  hiddenVid.muted = true;
-  hiddenVid.playsInline = true;
-  hiddenVid.play();
-
+/* ══════════════════════════════════════════
+   ZXING SCANNING — reads from the live video
+══════════════════════════════════════════ */
+function startZXing() {
+  const video  = document.getElementById('camVideo');
   const canvas = document.getElementById('decodeCanvas');
-  const ctx = canvas.getContext('2d');
+  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
 
   const hints = new Map();
   hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -1016,76 +844,97 @@ function startZXingOnStream(stream) {
   hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
 
   const zreader = new ZXing.BrowserMultiFormatReader(hints);
-  arReader = zreader;
 
-  let frameInterval = setInterval(() => {
-    if (!hiddenVid.videoWidth) return;
-    canvas.width  = hiddenVid.videoWidth;
-    canvas.height = hiddenVid.videoHeight;
-    ctx.drawImage(hiddenVid, 0, 0);
+  // Stop old interval if any
+  if (frameIntervalId) clearInterval(frameIntervalId);
+
+  frameIntervalId = setInterval(() => {
+    if (!video.videoWidth || !video.videoHeight || video.readyState < 2) return;
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    // Decode at native resolution for accuracy
+    canvas.width  = vw;
+    canvas.height = vh;
+    ctx.drawImage(video, 0, 0, vw, vh);
 
     try {
       const lum = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
       const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
       const result = zreader.decodeBitmap(bmp);
+
       if (result) {
-        // Try to get result point for 3D card placement
+        // Get barcode position on screen
         const pts = result.getResultPoints ? result.getResultPoints() : [];
+        const viewport = document.getElementById('camViewport');
+        const vRect = viewport.getBoundingClientRect();
+
         if (pts && pts.length > 0) {
-          // Average of result points → screen fraction
           let sx = 0, sy = 0;
           pts.forEach(p => { sx += p.getX(); sy += p.getY(); });
           sx /= pts.length; sy /= pts.length;
-          // Convert to % of video dimensions
-          barcodeScreenX = (sx / canvas.width) * 100;
-          barcodeScreenY = (sy / canvas.height) * 100;
+
+          // The video is object-fit:cover — compute the actual rendered area
+          const videoAspect = vw / vh;
+          const viewAspect  = vRect.width / vRect.height;
+          let renderW, renderH, offsetX = 0, offsetY = 0;
+          if (videoAspect > viewAspect) {
+            renderH = vRect.height;
+            renderW = renderH * videoAspect;
+            offsetX = (vRect.width - renderW) / 2;
+          } else {
+            renderW = vRect.width;
+            renderH = renderW / videoAspect;
+            offsetY = (vRect.height - renderH) / 2;
+          }
+
+          // Map video px → viewport px → fraction
+          barcodeScreenX = ((sx / vw) * renderW + offsetX) / vRect.width * 100;
+          barcodeScreenY = ((sy / vh) * renderH + offsetY) / vRect.height * 100;
         } else {
-          // fallback to center of frame box
           barcodeScreenX = 50;
           barcodeScreenY = 45;
         }
+
         onScan(result.getText(), result.getBarcodeFormat()?.toString() || 'Code');
       }
-    } catch(_) {
-      // no barcode in this frame
-    }
-  }, 350);
+    } catch(_) { /* no barcode this frame */ }
+  }, 300);
 
-  // Store for cleanup
-  window._frameInterval = frameInterval;
-  window._hiddenVid = hiddenVid;
+  window._zxingReader = zreader;
 }
 
-/* ══════════════════════════════════════════════════════
-   3D CARD POSITION LOOP
-   Keeps the HTML card anchored to the barcode's screen coords
-══════════════════════════════════════════════════════ */
-function startCardPositionLoop() {
-  const card = document.getElementById('ar3DCard');
-  const wrap = document.getElementById('arSceneWrap');
+/* ══════════════════════════════════════════
+   CARD POSITION LOOP
+══════════════════════════════════════════ */
+function startCardLoop() {
+  if (cardAnimId) cancelAnimationFrame(cardAnimId);
+  const card    = document.getElementById('ar3DCard');
+  const viewport = document.getElementById('camViewport');
 
   function update() {
     if (cardVisible) {
-      const wRect = wrap.getBoundingClientRect();
-      // Convert % → px within the wrap
-      const px = (barcodeScreenX / 100) * wRect.width;
-      const py = (barcodeScreenY / 100) * wRect.height;
+      const vRect = viewport.getBoundingClientRect();
+      const px = (barcodeScreenX / 100) * vRect.width;
+      const py = (barcodeScreenY / 100) * vRect.height;
 
-      // Clamp so card doesn't go off-screen
-      const clampedX = Math.min(Math.max(px, 120), wRect.width - 120);
-      const clampedY = Math.min(Math.max(py, 20), wRect.height - 20);
+      // Clamp so the card doesn't overflow
+      const cardW = card.offsetWidth || 240;
+      const clampX = Math.min(Math.max(px, cardW / 2 + 8), vRect.width - cardW / 2 - 8);
+      const clampY = Math.min(Math.max(py, 80), vRect.height - 20);
 
-      card.style.left = clampedX + 'px';
-      card.style.top  = clampedY + 'px';
+      card.style.left = clampX + 'px';
+      card.style.top  = clampY + 'px';
     }
-    scanAnimId = requestAnimationFrame(update);
+    cardAnimId = requestAnimationFrame(update);
   }
   update();
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    SCAN HANDLER
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function onScan(code, fmt) {
   if (!code || cooldown || code === lastCode) return;
   lastCode = code;
@@ -1095,45 +944,48 @@ function onScan(code, fmt) {
   flash();
   setS('found', fmt + ' found!');
   document.getElementById('scanHint').textContent = '✓ ' + fmt + ': ' + code.slice(0, 22);
-  showToast('✓ Barcode scanned! Looking up FDA data…', 'ok');
+  showToast('✓ Barcode detected — looking up FDA data…', 'ok');
   lookup(code);
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    TORCH + FLIP
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 async function toggleTorch() {
   if (!activeStream) return;
   const track = activeStream.getVideoTracks()[0];
   const caps = track.getCapabilities?.() || {};
-  if (!caps.torch) { showToast('Torch not available on this device', 'err'); return; }
+  if (!caps.torch) { showToast('Torch not supported on this device', 'err'); return; }
   torchOn = !torchOn;
-  await track.applyConstraints({ advanced: [{ torch: torchOn }] });
-  document.getElementById('torchBtn').classList.toggle('on', torchOn);
+  try {
+    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+    document.getElementById('torchBtn').classList.toggle('on', torchOn);
+  } catch(e) {
+    showToast('Could not toggle torch', 'err');
+  }
 }
 
 async function flipCam() {
-  // Stop existing stream
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
-  if (window._hiddenVid) { window._hiddenVid.srcObject = null; }
-  if (window._frameInterval) { clearInterval(window._frameInterval); }
+  if (frameIntervalId) { clearInterval(frameIntervalId); frameIntervalId = null; }
+  if (cardAnimId) { cancelAnimationFrame(cardAnimId); cardAnimId = null; }
   facing = facing === 'environment' ? 'user' : 'environment';
-  lastCode = '';
-  arStarted = false;
+  lastCode = ''; arStarted = false; torchOn = false;
+  document.getElementById('torchBtn').classList.remove('on');
   hideAR3DCard();
-  document.getElementById('arScene').style.display = 'none';
+  document.getElementById('camPermPrompt').classList.remove('hidden');
+  document.getElementById('camPermPrompt').classList.add('hidden'); // skip prompt on flip
   await startARCamera();
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    IMAGE UPLOAD
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 const dropZone = document.getElementById('dropZone');
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
+  e.preventDefault(); dropZone.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) handleImageFile(file);
   else showToast('Please drop an image file', 'err');
@@ -1158,14 +1010,13 @@ async function handleImageFile(file) {
       lookup(code.text);
     } else {
       document.getElementById('previewResult').innerHTML =
-        `<div class="pr-err">⚠ No barcode detected. Try a clearer photo or use manual search.</div>`;
-      showToast('No barcode found in image', 'err');
+        `<div class="pr-err">⚠ No barcode detected. Try a clearer photo or manual search 🔍</div>`;
+      showToast('No barcode detected in image', 'err');
     }
   } catch(e) {
     document.getElementById('scanOverlay').classList.add('hidden');
     document.getElementById('previewResult').innerHTML =
-      `<div class="pr-err">⚠ Decode error. Please try again.</div>`;
-    showToast('Could not decode image', 'err');
+      `<div class="pr-err">⚠ Decode error. Try a different image.</div>`;
   }
 }
 
@@ -1200,7 +1051,6 @@ function decodeImageBarcode(imageUrl) {
           if (result) break;
         } catch(_) {}
       }
-
       imgReader.reset();
       resolve(result ? { text: result.getText(), fmt: result.getBarcodeFormat()?.toString() || 'Code' } : null);
     };
@@ -1218,9 +1068,9 @@ function clearImage() {
   document.getElementById('scanOverlay').classList.remove('hidden');
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    FDA LOOKUP
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 async function lookup(code) {
   showLoad('Looking up ' + code.slice(0, 16) + '…');
   const clean = code.replace(/^0+/, '').trim();
@@ -1290,36 +1140,33 @@ async function doSearch() {
   hideLoad();
   if (drug) {
     currentDrug = drug;
-    // For manual search: position card at center
     barcodeScreenX = 50; barcodeScreenY = 45;
     showAR3DCard(drug, q);
     fillDetailDrawer(drug, q);
     closeSearchDrawer();
   } else {
-    showToast('No results found. Try different spelling.', 'err');
+    showToast('No results. Try different spelling.', 'err');
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   AR 3D FLOATING CARD
-══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   AR CARD
+══════════════════════════════════════════ */
 function showAR3DCard(drug, code) {
   const f = drug.openfda || {};
   const brand  = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown Medicine').toUpperCase();
   const gen    = f.generic_name?.[0] || f.substance_name?.[0] || '';
-  const mfr    = f.manufacturer_name?.[0] || '—';
   const rxotc  = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
   const route  = f.route?.[0] || '—';
   const form   = f.dosage_form?.[0] || '—';
-  const purpose = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 140);
-  const warn   = drug.warnings?.[0] ? trunc(drug.warnings[0], 100) : null;
+  const purpose = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 120);
+  const warn   = drug.warnings?.[0] ? trunc(drug.warnings[0], 90) : null;
 
   document.getElementById('ar3dBrand').textContent = brand;
-  document.getElementById('ar3dGen').textContent = gen && gen.toUpperCase() !== brand ? gen : '';
+  document.getElementById('ar3dGen').textContent = (gen && gen.toUpperCase() !== brand) ? gen : '';
   const badge = document.getElementById('ar3dBadge');
   badge.textContent = rxotc;
   badge.className = 'ar3d-badge ' + (rxotc === 'OTC' ? 'otc' : 'rx');
-
   document.getElementById('ar3dRoute').textContent = route;
   document.getElementById('ar3dForm').textContent = form;
   document.getElementById('ar3dType').textContent = rxotc === 'OTC' ? 'Over Counter' : 'Prescription';
@@ -1338,15 +1185,15 @@ function showAR3DCard(drug, code) {
   card.classList.add('show');
   cardVisible = true;
 
-  // History
+  // Save to history
   hist = hist.filter(h => h.code !== String(code));
   hist.unshift({ name: brand, code: String(code), gen });
   if (hist.length > 6) hist.length = 6;
   try { localStorage.setItem('mh3', JSON.stringify(hist)); } catch(_) {}
   renderHist();
 
-  setS('found', 'AR Card Active ✓');
-  setTimeout(() => setS('scanning', 'Scanning…'), 6000);
+  setS('found', 'Found ✓');
+  setTimeout(() => { if (currentMode === 'live') setS('scanning', 'Scanning…'); }, 7000);
 }
 
 function hideAR3DCard() {
@@ -1354,9 +1201,9 @@ function hideAR3DCard() {
   cardVisible = false;
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    DETAIL DRAWER
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function fillDetailDrawer(drug, code) {
   const f = drug.openfda || {};
   const brand  = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown').toUpperCase();
@@ -1367,7 +1214,7 @@ function fillDetailDrawer(drug, code) {
   const form   = f.dosage_form?.[0] || '—';
 
   document.getElementById('dname').textContent = brand;
-  document.getElementById('dgen').textContent = gen && gen.toUpperCase() !== brand ? gen : '';
+  document.getElementById('dgen').textContent = (gen && gen.toUpperCase() !== brand) ? gen : '';
   setBadge('dbadge', rxotc);
 
   const grid = [
@@ -1381,15 +1228,15 @@ function fillDetailDrawer(drug, code) {
     .map(i => `<div class="ibox"><div class="ilbl">${i.l}</div><div class="ival ${i.c}">${i.v}</div></div>`)
     .join('');
 
-  document.getElementById('purpose').textContent   = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 400);
-  document.getElementById('dosage').textContent     = trunc(drug.dosage_and_administration?.[0] || '—', 500);
-  document.getElementById('stopuse').textContent    = trunc(drug.stop_use?.[0] || 'Consult your doctor.', 300);
-  document.getElementById('interactions').textContent = trunc(drug.drug_interactions?.[0] || '—', 500);
-  document.getElementById('askdoc').textContent     = trunc(drug.ask_doctor_or_pharmacist?.[0] || drug.ask_doctor?.[0] || 'Ask your doctor or pharmacist.', 300);
+  document.getElementById('purpose').textContent      = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 400);
+  document.getElementById('dosage').textContent        = trunc(drug.dosage_and_administration?.[0] || '—', 500);
+  document.getElementById('stopuse').textContent       = trunc(drug.stop_use?.[0] || 'Consult your doctor.', 300);
+  document.getElementById('interactions').textContent  = trunc(drug.drug_interactions?.[0] || '—', 500);
+  document.getElementById('askdoc').textContent        = trunc(drug.ask_doctor_or_pharmacist?.[0] || drug.ask_doctor?.[0] || 'Ask your doctor or pharmacist.', 300);
 
   let wb = '';
   if (drug.boxed_warning?.[0]) wb += `<div class="dbox"><div class="wico">☠️</div><div class="dtxt"><strong>BOXED WARNING:</strong> ${trunc(drug.boxed_warning[0], 300)}</div></div>`;
-  if (drug.warnings?.[0]) wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0], 400)}</div></div>`;
+  if (drug.warnings?.[0])      wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0], 400)}</div></div>`;
   if (drug.contraindications?.[0]) wb += `<div class="slbl">Contraindications</div><div class="dbox"><div class="wico">🚫</div><div class="dtxt">${trunc(drug.contraindications[0], 300)}</div></div>`;
   if (drug.adverse_reactions?.[0]) wb += `<div class="slbl">Side Effects</div><div class="prose">${trunc(drug.adverse_reactions[0], 400)}</div>`;
   document.getElementById('wbody').innerHTML = wb || '<div class="prose" style="color:var(--muted)">No specific warnings listed.</div>';
@@ -1397,27 +1244,28 @@ function fillDetailDrawer(drug, code) {
 
 function openDetailDrawer() {
   document.getElementById('detailDrawer').classList.add('open');
+  document.getElementById('detailBackdrop').classList.add('show');
   goTab('overview');
 }
 function closeDetailDrawer() {
   document.getElementById('detailDrawer').classList.remove('open');
+  document.getElementById('detailBackdrop').classList.remove('show');
 }
 
-/* Search drawer */
 function openSearchDrawer() {
-  document.getElementById('searchDrawer').style.display = 'block';
-  setTimeout(() => document.getElementById('sinput').focus(), 100);
+  document.getElementById('searchBar').style.display = 'flex';
+  setTimeout(() => document.getElementById('sinput').focus(), 120);
 }
 function closeSearchDrawer() {
-  document.getElementById('searchDrawer').style.display = 'none';
+  document.getElementById('searchBar').style.display = 'none';
 }
 
-/* ══════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    HELPERS
-══════════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function goTab(name) {
-  const names = ['overview', 'dosage', 'warnings', 'interactions'];
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', names[i] === name));
+  const names = ['overview','dosage','warnings','interactions'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
   document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
   document.getElementById('p-' + name).classList.add('active');
 }
@@ -1431,10 +1279,10 @@ function setS(cls, txt) {
 }
 function showLoad(t) {
   document.getElementById('ltxt').textContent = t;
-  document.getElementById('loading').classList.add('show');
+  document.getElementById('loadingOverlay').classList.add('show');
 }
 function hideLoad() {
-  document.getElementById('loading').classList.remove('show');
+  document.getElementById('loadingOverlay').classList.remove('show');
 }
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
@@ -1450,20 +1298,21 @@ function trunc(s, n) {
   s = s.replace(/\s+/g, ' ').trim();
   return s.length > n ? s.slice(0, n) + '…' : s;
 }
-
 function renderHist() {
-  renderHistIn('histWrap');
+  renderHistIn('histWrapLive');
+  renderHistIn('histWrapUpload');
 }
-function renderHistIn(containerId) {
-  const wrap = document.getElementById(containerId);
-  if (!wrap || !hist.length) return;
+function renderHistIn(id) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return;
+  if (!hist.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
   wrap.innerHTML = `
     <div class="hlbl">Recent Scans</div>
     ${hist.map(h => `
       <div class="hitem" onclick="qs('${h.name}')">
         <div><div class="hname">${h.name}</div><div class="hcode">${h.code}</div></div>
-        <div style="color:var(--muted)">›</div>
+        <div style="color:var(--muted);font-size:16px">›</div>
       </div>`).join('')}
   `;
 }
@@ -1472,11 +1321,6 @@ function qs(name) {
   openSearchDrawer();
   doSearch();
 }
-
-// Close detail drawer on backdrop tap
-document.getElementById('detailDrawer').addEventListener('click', function(e) {
-  if (e.target === this) closeDetailDrawer();
-});
 
 renderHist();
 </script>
