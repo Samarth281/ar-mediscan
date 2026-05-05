@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AR-MediScan</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
- 
+
 <!-- A-Frame + AR.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
 <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 <!-- ZXing for barcode -->
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
- 
+
 <style>
   :root {
     --bg: #020c16;
@@ -33,7 +33,7 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
- 
+
   /* ── SPLASH ── */
   #splash {
     position: fixed; inset: 0; background: var(--bg);
@@ -67,7 +67,7 @@
     display: flex; flex-direction: column; align-items: center; gap: 5px;
   }
   .splash-feat span { font-size: 24px; }
- 
+
   /* NEW: True AR badge */
   .ar-true-badge {
     margin-top: 20px; position: relative; z-index: 1;
@@ -84,7 +84,7 @@
     animation: blink 1.4s infinite;
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
- 
+
   .splash-btn {
     margin-top: 30px; position: relative; z-index: 1;
     background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,157,0.08));
@@ -94,11 +94,11 @@
     transition: all 0.2s; text-transform: uppercase;
   }
   .splash-btn:hover { background: rgba(0,212,255,0.22); box-shadow: 0 0 36px rgba(0,212,255,0.22); }
- 
+
   /* ── APP SHELL ── */
   #app { display: none; flex-direction: column; min-height: 100vh; }
   #app.visible { display: flex; }
- 
+
   /* ── HEADER ── */
   .hdr {
     padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
@@ -124,7 +124,7 @@
   .dot.scanning{ background: var(--accent);  box-shadow: 0 0 8px var(--accent);  animation: blink 0.8s infinite; }
   .dot.found   { background: var(--accent2); box-shadow: 0 0 14px var(--accent2); animation: none; }
   .dot.err     { background: var(--danger);  box-shadow: 0 0 6px var(--danger); }
- 
+
   /* ── MODE TABS ── */
   .mode-tabs {
     display: flex; background: var(--surface); border-bottom: 1px solid var(--border);
@@ -138,31 +138,31 @@
   }
   .mtab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,212,255,0.04); }
   .mtab-icon { font-size: 14px; }
- 
+
   /* ── PAGE CONTENT OFFSET ── */
   .page-content { padding-top: 82px; flex: 1; display: flex; flex-direction: column; }
- 
+
   /* ══════════════════════════════════════════════
      AR MODE — True WebAR with A-Frame + AR.js
   ══════════════════════════════════════════════ */
   #arModePanel {
     display: flex; flex-direction: column; flex: 1; position: relative;
   }
- 
+
   /* A-Frame scene container */
   #arSceneWrap {
     position: relative; width: 100%; height: calc(100vh - 82px);
     overflow: hidden; background: #000;
   }
- 
+
   /* A-Frame itself */
   #arScene {
     position: absolute; inset: 0; width: 100%; height: 100%;
   }
- 
+
   /* ZXing overlay canvas (hidden, used for decoding) */
   #decodeCanvas { display: none; }
- 
+
   /* AR scan frame overlay (on top of A-Frame) */
   .ar-hud {
     position: absolute; inset: 0; pointer-events: none;
@@ -183,7 +183,7 @@
     animation: smove 2.4s ease-in-out infinite;
   }
   @keyframes smove { 0%{top:4px;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:calc(100% - 4px);opacity:0} }
- 
+
   .scan-hint {
     margin-top: 14px; font-family: 'Space Mono', monospace; font-size: 10px;
     color: rgba(255,255,255,0.55); letter-spacing: 0.08em; text-transform: uppercase; text-align: center;
@@ -193,7 +193,7 @@
     font-family: 'Space Mono', monospace; font-size: 8px; padding: 2px 8px; border-radius: 2px;
     border: 1px solid rgba(0,212,255,0.25); color: rgba(0,212,255,0.6); background: rgba(0,212,255,0.06);
   }
- 
+
   /* AR camera controls */
   .cam-btns {
     position: absolute; top: 10px; right: 10px;
@@ -207,7 +207,7 @@
   }
   .cbtn:hover { border-color: var(--accent); }
   .cbtn.on { border-color: var(--accent2); background: rgba(0,255,157,0.12); }
- 
+
   /* ── 3D AR Info Card (HTML overlay positioned via canvas coords) ── */
   #ar3DCard {
     position: absolute;
@@ -219,7 +219,7 @@
     will-change: transform, opacity;
   }
   #ar3DCard.show { opacity: 1; pointer-events: all; }
- 
+
   .ar3d-inner {
     background: rgba(2, 14, 26, 0.92);
     border: 1.5px solid rgba(0, 212, 255, 0.55);
@@ -239,7 +239,7 @@
     from { transform: scale(0.82) translateY(12px); opacity: 0; }
     to   { transform: scale(1) translateY(0); opacity: 1; }
   }
- 
+
   /* Tether line from card bottom to target point */
   .tether {
     width: 2px; height: 36px;
@@ -253,7 +253,7 @@
     margin: 0 auto; animation: tdot 1.2s ease-in-out infinite;
   }
   @keyframes tdot { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
- 
+
   .ar3d-top {
     padding: 11px 14px 8px;
     border-bottom: 1px solid rgba(0,212,255,0.12);
@@ -273,7 +273,7 @@
   }
   .ar3d-badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
   .ar3d-badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
- 
+
   .ar3d-chips {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     gap: 6px; padding: 9px 12px;
@@ -285,7 +285,7 @@
     color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
   }
   .ar3d-chip-v { font-size: 10px; color: var(--text); margin-top: 2px; font-weight: 500; line-height: 1.3; }
- 
+
   .ar3d-purpose {
     padding: 9px 14px;
     font-size: 10.5px; color: var(--muted); line-height: 1.6;
@@ -297,7 +297,7 @@
     text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--accent); margin-bottom: 4px;
   }
- 
+
   .ar3d-warn {
     padding: 7px 14px; background: rgba(255,204,0,0.05);
     border-bottom: 1px solid rgba(255,204,0,0.1);
@@ -305,7 +305,7 @@
     display: none;
   }
   .ar3d-warn.show { display: block; }
- 
+
   .ar3d-footer {
     padding: 7px 14px; display: flex; align-items: center; justify-content: space-between;
   }
@@ -320,10 +320,10 @@
     text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.2s; pointer-events: all;
   }
   .ar3d-detail-btn:hover { background: rgba(0,212,255,0.2); }
- 
+
   /* ── UPLOAD MODE ── */
   #uploadPanel { display: none; padding: 16px; flex: 1; overflow-y: auto; }
- 
+
   .drop-zone {
     border: 2px dashed var(--border); border-radius: 8px;
     padding: 32px 20px; text-align: center; cursor: pointer;
@@ -343,7 +343,7 @@
     font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase;
   }
   .dz-or::before, .dz-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
- 
+
   .cam-capture-btn {
     width: 100%; background: rgba(0,212,255,0.08); border: 1.5px solid rgba(0,212,255,0.3);
     color: var(--accent); border-radius: 6px; padding: 12px;
@@ -354,7 +354,7 @@
   }
   .cam-capture-btn:hover { background: rgba(0,212,255,0.14); }
   #captureInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
- 
+
   #imgPreviewWrap { display: none; margin-top: 14px; }
   .preview-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
@@ -392,7 +392,7 @@
     letter-spacing: 0.07em; cursor: pointer; transition: all 0.2s;
   }
   .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
- 
+
   .tips-box {
     margin-top: 14px; background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.12);
     border-radius: 6px; padding: 12px 14px;
@@ -403,7 +403,7 @@
   }
   .tip { font-size: 11px; color: var(--muted); line-height: 1.55; display: flex; gap: 7px; margin-bottom: 4px; }
   .tip::before { content: '›'; color: var(--accent); flex-shrink: 0; }
- 
+
   /* ── DETAIL DRAWER (slides up from bottom) ── */
   #detailDrawer {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
@@ -415,7 +415,7 @@
     box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
   }
   #detailDrawer.open { transform: translateY(0); }
- 
+
   .drawer-handle {
     width: 40px; height: 4px; background: var(--border); border-radius: 2px;
     margin: 12px auto 0; cursor: pointer;
@@ -428,7 +428,7 @@
     padding: 4px 10px; border-radius: 3px; transition: all 0.2s;
   }
   .drawer-close:hover { color: var(--danger); border-color: var(--danger); }
- 
+
   .dhead {
     padding: 12px 16px; border-bottom: 1px solid var(--border);
     background: rgba(0,212,255,0.04); margin-top: 8px;
@@ -442,7 +442,7 @@
   }
   .badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
   .badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
- 
+
   .tabs {
     display: flex; border-bottom: 1px solid var(--border);
     overflow-x: auto; scrollbar-width: none;
@@ -455,10 +455,10 @@
     transition: all 0.2s; flex-shrink: 0;
   }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
- 
+
   .pane { display: none; padding: 14px 16px; }
   .pane.active { display: block; }
- 
+
   .igrid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 12px; }
   .ibox {
     background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px;
@@ -469,14 +469,14 @@
   }
   .ival { font-size: 12px; color: var(--text); font-weight: 500; line-height: 1.3; }
   .ival.c1{color:var(--accent)} .ival.c2{color:var(--accent2)} .ival.c3{color:var(--accent3)}
- 
+
   .slbl {
     font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase;
     letter-spacing: 0.07em; color: var(--accent); margin: 12px 0 6px;
   }
   .slbl:first-child { margin-top: 0; }
   .prose { font-size: 12.5px; color: var(--text); line-height: 1.65; }
- 
+
   .wbox {
     background: rgba(255,204,0,0.07); border: 1px solid rgba(255,204,0,0.2);
     border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px;
@@ -488,7 +488,7 @@
     border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px;
   }
   .dtxt { font-size: 12px; color: rgba(255,110,140,0.9); line-height: 1.55; }
- 
+
   /* ── SEARCH BAR (search mode, accessible from drawer) ── */
   #searchBar {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 700;
@@ -512,7 +512,7 @@
     font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
   }
   .sbtn:active { transform: scale(0.97); }
- 
+
   /* loading */
   .loading { display: none; align-items: center; justify-content: center; gap: 10px; padding: 16px; }
   .loading.show { display: flex; }
@@ -521,7 +521,7 @@
     border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
   }
   .ltxt { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
- 
+
   /* history */
   .hlbl {
     font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase;
@@ -535,7 +535,7 @@
   .hitem:hover { border-color: var(--accent); }
   .hname { font-size: 13px; color: var(--text); font-weight: 500; }
   .hcode { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
- 
+
   /* toast */
   .toast {
     position: fixed; top: 58px; left: 50%; transform: translateX(-50%) translateY(-14px);
@@ -547,14 +547,14 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.err { border-color: rgba(255,68,102,0.4); color: #ff8899; }
   .toast.ok  { border-color: rgba(0,255,157,0.4); color: var(--accent2); }
- 
+
   #flash {
     position: fixed; inset: 0; background: rgba(0,255,157,0.07);
     pointer-events: none; opacity: 0; z-index: 99;
   }
   #flash.go { animation: fgo 0.5s ease; }
   @keyframes fgo { 0%{opacity:1} 100%{opacity:0} }
- 
+
   /* ── Search mode toggle ── */
   #searchToggle {
     width: 38px; height: 38px; border-radius: 50%; background: rgba(8,24,40,0.88);
@@ -564,13 +564,13 @@
     position: absolute; top: 10px; left: 10px; z-index: 20;
   }
   #searchToggle:hover { border-color: var(--accent); }
- 
+
   /* empty hist */
   #histWrap { padding: 14px 16px 80px; }
   .empty { text-align: center; padding: 24px 16px; color: var(--muted); }
   .eico { font-size: 36px; opacity: 0.4; margin-bottom: 8px; }
   .etxt { font-size: 13px; line-height: 1.6; }
- 
+
   /* ── Camera permission prompt ── */
   #camPermPrompt {
     position: absolute; inset: 0; background: rgba(2,12,22,0.96);
@@ -586,7 +586,7 @@
     padding: 13px 30px; font-family: 'Space Mono', monospace; font-size: 11px;
     font-weight: 700; cursor: pointer; letter-spacing: 0.05em;
   }
- 
+
   /* ── AR mode info pill ── */
   .ar-mode-pill {
     position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -600,7 +600,7 @@
     width: 5px; height: 5px; border-radius: 50%;
     background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: blink 1s infinite;
   }
- 
+
   @media(min-width:600px) {
     .igrid { grid-template-columns: repeat(3,1fr); }
     #ar3DCard { max-width: 320px; }
@@ -611,7 +611,7 @@
 <div id="flash"></div>
 <div class="toast" id="toast"></div>
 <canvas id="decodeCanvas"></canvas>
- 
+
 <!-- ══════════════════════════════════ SPLASH ══════════════════════════════════ -->
 <div id="splash">
   <div class="splash-glow"></div>
@@ -630,7 +630,7 @@
   </div>
   <button class="splash-btn" onclick="startApp()">► Launch Scanner</button>
 </div>
- 
+
 <!-- ══════════════════════════════════ APP ══════════════════════════════════ -->
 <div id="app">
   <div class="hdr">
@@ -639,7 +639,7 @@
       <div class="status"><div class="dot" id="dot"></div><span id="stxt">Ready</span></div>
     </div>
   </div>
- 
+
   <div class="mode-tabs">
     <div class="mtab active" id="mtab-live" onclick="switchMode('live')">
       <span class="mtab-icon">📷</span> AR Live Scan
@@ -648,13 +648,13 @@
       <span class="mtab-icon">🖼️</span> Upload Image
     </div>
   </div>
- 
+
   <div class="page-content">
- 
+
     <!-- ═══════════════ AR LIVE MODE ═══════════════ -->
     <div id="arModePanel">
       <div id="arSceneWrap">
- 
+
         <!-- Camera permission prompt -->
         <div id="camPermPrompt">
           <div class="cp-icon">📷</div>
@@ -662,7 +662,7 @@
           <div class="cp-sub">AR-MediScan needs your camera to scan medicines in real-time. Your camera is never recorded or stored.</div>
           <button class="cp-btn" onclick="startARCamera()">Allow Camera & Start AR</button>
         </div>
- 
+
         <!-- A-Frame AR Scene -->
         <a-scene
           id="arScene"
@@ -675,7 +675,7 @@
           <!-- Ambient light -->
           <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
           <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
- 
+
           <!-- Hiro marker — shows a 3D axis indicator when detected -->
           <a-marker preset="hiro" id="hiroMarker">
             <!-- Pulsing ring on the marker plane -->
@@ -701,17 +701,17 @@
             <a-box position="0 0.02 0" width="0.9" height="0.015" depth="0.015" color="#00d4ff" opacity="0.4"></a-box>
             <a-box position="0 0.02 0" width="0.015" height="0.015" depth="0.9" color="#00d4ff" opacity="0.4"></a-box>
           </a-marker>
- 
+
           <!-- Custom barcode marker (DATA_MATRIX style) -->
           <a-marker type="barcode" value="0" id="barcodeMarker0">
             <a-sphere position="0 0.1 0" radius="0.1" color="#00ff9d" opacity="0.85"
               animation="property: scale; to: 1.3 1.3 1.3; loop: true; dur: 1000; dir: alternate; easing: easeInOutSine">
             </a-sphere>
           </a-marker>
- 
+
           <a-camera-static></a-camera-static>
         </a-scene>
- 
+
         <!-- AR HUD overlay (on top of A-Frame) -->
         <div class="ar-hud" id="arHud">
           <div class="frame-box">
@@ -727,22 +727,22 @@
             <span class="stag">Code128</span>
           </div>
         </div>
- 
+
         <!-- AR mode pill -->
         <div class="ar-mode-pill">
           <div class="ar-mode-pill-dot"></div>
           True AR · 3D Card
         </div>
- 
+
         <!-- Camera controls -->
         <div class="cam-btns">
           <div class="cbtn" id="torchBtn" onclick="toggleTorch()" title="Torch">🔦</div>
           <div class="cbtn" onclick="flipCam()" title="Flip camera">🔄</div>
         </div>
- 
+
         <!-- Search toggle -->
         <div id="searchToggle" onclick="openSearchDrawer()" title="Manual search">🔍</div>
- 
+
         <!-- ══════ TRUE AR 3D FLOATING CARD ══════
              This HTML element is positioned in screen-space
              above the detected barcode's projected 2D coordinates.
@@ -776,10 +776,10 @@
             </div>
           </div>
         </div>
- 
+
       </div><!-- /arSceneWrap -->
     </div><!-- /arModePanel -->
- 
+
     <!-- ═══════════════ UPLOAD MODE ═══════════════ -->
     <div id="uploadPanel">
       <div class="drop-zone" id="dropZone">
@@ -788,14 +788,14 @@
         <div class="dz-title">Drop a medicine image here</div>
         <div class="dz-sub">Supports JPG, PNG, WEBP · Works with any barcode, QR or DataMatrix on the packaging</div>
       </div>
- 
+
       <div class="dz-or">or</div>
- 
+
       <button class="cam-capture-btn">
         <input type="file" id="captureInput" accept="image/*" capture="environment" onchange="handleImageFile(this.files[0])">
         📸 Take Photo with Camera
       </button>
- 
+
       <div id="imgPreviewWrap">
         <div class="preview-card">
           <div class="preview-top">
@@ -809,7 +809,7 @@
         </div>
         <button class="clear-btn" onclick="clearImage()">✕ Clear Image</button>
       </div>
- 
+
       <div class="tips-box">
         <div class="tips-title">📌 Tips for best results</div>
         <div class="tip">Take the photo in good lighting — avoid shadows over the barcode</div>
@@ -817,14 +817,14 @@
         <div class="tip">Make sure the full barcode is visible and not cut off</div>
         <div class="tip">Works with EAN-13, UPC, QR codes, DataMatrix and Code128</div>
       </div>
- 
+
       <!-- History in upload mode -->
       <div id="histWrapUpload" style="padding-top:14px;"></div>
     </div>
- 
+
   </div><!-- /page-content -->
 </div><!-- /app -->
- 
+
 <!-- ══════════════════════════════════
      DETAIL DRAWER (full drug info)
 ══════════════════════════════════ -->
@@ -863,7 +863,7 @@
   </div>
   <div style="height:20px;"></div>
 </div>
- 
+
 <!-- Search drawer (manual search) -->
 <div id="searchDrawer" style="display:none;">
   <div id="searchBar">
@@ -878,11 +878,11 @@
     <span class="ltxt" id="ltxt">Looking up…</span>
   </div>
 </div>
- 
+
 <!-- History (under AR view, accessible via scroll or search) -->
 <div id="histWrap" style="display:none; padding: 14px 16px 80px; background: var(--bg);"></div>
- 
- 
+
+
 <script>
 /* ══════════════════════════════════════════════════════
    STATE
@@ -897,15 +897,15 @@ let currentDrug = null;
 let scanAnimId = null;
 let currentMode = 'live';
 let arStarted = false;
- 
+
 // Barcode position tracking for 3D card placement
 let barcodeScreenX = 50; // %
 let barcodeScreenY = 50; // %
 let cardVisible = false;
- 
+
 let hist = [];
 try { hist = JSON.parse(localStorage.getItem('mh3') || '[]'); } catch(_){}
- 
+
 /* ══════════════════════════════════════════════════════
    SPLASH
 ══════════════════════════════════════════════════════ */
@@ -923,7 +923,7 @@ function startApp() {
     }
   }, 650);
 }
- 
+
 /* ══════════════════════════════════════════════════════
    MODE
 ══════════════════════════════════════════════════════ */
@@ -935,14 +935,14 @@ function switchMode(mode) {
   document.getElementById('uploadPanel').style.display = mode === 'upload' ? 'block' : 'none';
   if (mode === 'upload') renderHistIn('histWrapUpload');
 }
- 
+
 /* ══════════════════════════════════════════════════════
    AR CAMERA SETUP
 ══════════════════════════════════════════════════════ */
 function hideCamPermPrompt() {
   document.getElementById('camPermPrompt').classList.add('hidden');
 }
- 
+
 async function startARCamera() {
   if (arStarted) return;
   setS('ready', 'Starting AR…');
@@ -955,19 +955,19 @@ async function startARCamera() {
       }
     });
     hideCamPermPrompt();
- 
+
     // Show A-Frame scene (it auto-uses webcam via AR.js sourceType:webcam)
     // We also run ZXing on the stream for barcode detection
     const scene = document.getElementById('arScene');
     scene.style.display = 'block';
- 
+
     arStarted = true;
     setS('scanning', 'Scanning…');
     startZXingOnStream(activeStream);
- 
+
     // Start 3D card position animation loop
     startCardPositionLoop();
- 
+
   } catch(e) {
     if (e.name === 'NotAllowedError') {
       setS('err', 'Denied');
@@ -984,7 +984,7 @@ async function startARCamera() {
     }
   }
 }
- 
+
 /* ══════════════════════════════════════════════════════
    ZXING BARCODE DETECTION (runs on live stream via canvas)
 ══════════════════════════════════════════════════════ */
@@ -995,10 +995,10 @@ function startZXingOnStream(stream) {
   hiddenVid.muted = true;
   hiddenVid.playsInline = true;
   hiddenVid.play();
- 
+
   const canvas = document.getElementById('decodeCanvas');
   const ctx = canvas.getContext('2d');
- 
+
   const hints = new Map();
   hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
     ZXing.BarcodeFormat.DATA_MATRIX,
@@ -1014,16 +1014,16 @@ function startZXingOnStream(stream) {
     ZXing.BarcodeFormat.AZTEC,
   ]);
   hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
- 
+
   const zreader = new ZXing.BrowserMultiFormatReader(hints);
   arReader = zreader;
- 
+
   let frameInterval = setInterval(() => {
     if (!hiddenVid.videoWidth) return;
     canvas.width  = hiddenVid.videoWidth;
     canvas.height = hiddenVid.videoHeight;
     ctx.drawImage(hiddenVid, 0, 0);
- 
+
     try {
       const lum = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
       const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
@@ -1050,12 +1050,12 @@ function startZXingOnStream(stream) {
       // no barcode in this frame
     }
   }, 350);
- 
+
   // Store for cleanup
   window._frameInterval = frameInterval;
   window._hiddenVid = hiddenVid;
 }
- 
+
 /* ══════════════════════════════════════════════════════
    3D CARD POSITION LOOP
    Keeps the HTML card anchored to the barcode's screen coords
@@ -1063,18 +1063,18 @@ function startZXingOnStream(stream) {
 function startCardPositionLoop() {
   const card = document.getElementById('ar3DCard');
   const wrap = document.getElementById('arSceneWrap');
- 
+
   function update() {
     if (cardVisible) {
       const wRect = wrap.getBoundingClientRect();
       // Convert % → px within the wrap
       const px = (barcodeScreenX / 100) * wRect.width;
       const py = (barcodeScreenY / 100) * wRect.height;
- 
+
       // Clamp so card doesn't go off-screen
       const clampedX = Math.min(Math.max(px, 120), wRect.width - 120);
       const clampedY = Math.min(Math.max(py, 20), wRect.height - 20);
- 
+
       card.style.left = clampedX + 'px';
       card.style.top  = clampedY + 'px';
     }
@@ -1082,7 +1082,7 @@ function startCardPositionLoop() {
   }
   update();
 }
- 
+
 /* ══════════════════════════════════════════════════════
    SCAN HANDLER
 ══════════════════════════════════════════════════════ */
@@ -1091,14 +1091,14 @@ function onScan(code, fmt) {
   lastCode = code;
   cooldown = true;
   setTimeout(() => { cooldown = false; }, 5000);
- 
+
   flash();
   setS('found', fmt + ' found!');
   document.getElementById('scanHint').textContent = '✓ ' + fmt + ': ' + code.slice(0, 22);
   showToast('✓ Barcode scanned! Looking up FDA data…', 'ok');
   lookup(code);
 }
- 
+
 /* ══════════════════════════════════════════════════════
    TORCH + FLIP
 ══════════════════════════════════════════════════════ */
@@ -1111,7 +1111,7 @@ async function toggleTorch() {
   await track.applyConstraints({ advanced: [{ torch: torchOn }] });
   document.getElementById('torchBtn').classList.toggle('on', torchOn);
 }
- 
+
 async function flipCam() {
   // Stop existing stream
   if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
@@ -1124,7 +1124,7 @@ async function flipCam() {
   document.getElementById('arScene').style.display = 'none';
   await startARCamera();
 }
- 
+
 /* ══════════════════════════════════════════════════════
    IMAGE UPLOAD
 ══════════════════════════════════════════════════════ */
@@ -1138,7 +1138,7 @@ dropZone.addEventListener('drop', e => {
   if (file && file.type.startsWith('image/')) handleImageFile(file);
   else showToast('Please drop an image file', 'err');
 });
- 
+
 async function handleImageFile(file) {
   if (!file) return;
   const url = URL.createObjectURL(file);
@@ -1146,7 +1146,7 @@ async function handleImageFile(file) {
   document.getElementById('imgPreviewWrap').style.display = 'block';
   document.getElementById('scanOverlay').classList.remove('hidden');
   document.getElementById('previewResult').innerHTML = '';
- 
+
   try {
     const code = await decodeImageBarcode(url);
     document.getElementById('scanOverlay').classList.add('hidden');
@@ -1168,7 +1168,7 @@ async function handleImageFile(file) {
     showToast('Could not decode image', 'err');
   }
 }
- 
+
 function decodeImageBarcode(imageUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1187,7 +1187,7 @@ function decodeImageBarcode(imageUrl) {
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       const imgReader = new ZXing.BrowserMultiFormatReader(hints);
       let result = null;
- 
+
       for (const scale of scales) {
         try {
           canvas.width  = Math.round(img.naturalWidth  * scale);
@@ -1200,7 +1200,7 @@ function decodeImageBarcode(imageUrl) {
           if (result) break;
         } catch(_) {}
       }
- 
+
       imgReader.reset();
       resolve(result ? { text: result.getText(), fmt: result.getBarcodeFormat()?.toString() || 'Code' } : null);
     };
@@ -1208,7 +1208,7 @@ function decodeImageBarcode(imageUrl) {
     img.src = imageUrl;
   });
 }
- 
+
 function clearImage() {
   document.getElementById('imgPreviewWrap').style.display = 'none';
   document.getElementById('previewImg').src = '';
@@ -1217,7 +1217,7 @@ function clearImage() {
   document.getElementById('captureInput').value = '';
   document.getElementById('scanOverlay').classList.remove('hidden');
 }
- 
+
 /* ══════════════════════════════════════════════════════
    FDA LOOKUP
 ══════════════════════════════════════════════════════ */
@@ -1225,7 +1225,7 @@ async function lookup(code) {
   showLoad('Looking up ' + code.slice(0, 16) + '…');
   const clean = code.replace(/^0+/, '').trim();
   let drug = null;
- 
+
   const endpoints = [
     `https://api.fda.gov/drug/label.json?search=openfda.upc:"${code}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search=openfda.package_ndc:"${clean}"&limit=1`,
@@ -1233,7 +1233,7 @@ async function lookup(code) {
     `https://api.fda.gov/drug/ndc.json?search=product_ndc:"${clean}"&limit=1`,
     `https://api.fda.gov/drug/label.json?search="${clean}"&limit=1`,
   ];
- 
+
   for (const u of endpoints) {
     try {
       const r = await fetch(u);
@@ -1242,7 +1242,7 @@ async function lookup(code) {
       if (d.results?.length) { drug = d.results[0]; break; }
     } catch(_) {}
   }
- 
+
   if (!drug && isNaN(Number(code)) && code.length > 3) {
     for (const u of [
       `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(code)}"&limit=1`,
@@ -1256,7 +1256,7 @@ async function lookup(code) {
       } catch(_) {}
     }
   }
- 
+
   hideLoad();
   if (drug) {
     currentDrug = drug;
@@ -1268,7 +1268,7 @@ async function lookup(code) {
     lastCode = '';
   }
 }
- 
+
 async function doSearch() {
   const q = document.getElementById('sinput').value.trim();
   if (!q) return;
@@ -1299,7 +1299,7 @@ async function doSearch() {
     showToast('No results found. Try different spelling.', 'err');
   }
 }
- 
+
 /* ══════════════════════════════════════════════════════
    AR 3D FLOATING CARD
 ══════════════════════════════════════════════════════ */
@@ -1313,19 +1313,19 @@ function showAR3DCard(drug, code) {
   const form   = f.dosage_form?.[0] || '—';
   const purpose = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 140);
   const warn   = drug.warnings?.[0] ? trunc(drug.warnings[0], 100) : null;
- 
+
   document.getElementById('ar3dBrand').textContent = brand;
   document.getElementById('ar3dGen').textContent = gen && gen.toUpperCase() !== brand ? gen : '';
   const badge = document.getElementById('ar3dBadge');
   badge.textContent = rxotc;
   badge.className = 'ar3d-badge ' + (rxotc === 'OTC' ? 'otc' : 'rx');
- 
+
   document.getElementById('ar3dRoute').textContent = route;
   document.getElementById('ar3dForm').textContent = form;
   document.getElementById('ar3dType').textContent = rxotc === 'OTC' ? 'Over Counter' : 'Prescription';
   document.getElementById('ar3dPurpose').textContent = purpose;
   document.getElementById('ar3dCode').textContent = code.slice(0, 18);
- 
+
   const warnEl = document.getElementById('ar3dWarn');
   if (warn) {
     document.getElementById('ar3dWarnTxt').textContent = warn;
@@ -1333,27 +1333,27 @@ function showAR3DCard(drug, code) {
   } else {
     warnEl.classList.remove('show');
   }
- 
+
   const card = document.getElementById('ar3DCard');
   card.classList.add('show');
   cardVisible = true;
- 
+
   // History
   hist = hist.filter(h => h.code !== String(code));
   hist.unshift({ name: brand, code: String(code), gen });
   if (hist.length > 6) hist.length = 6;
   try { localStorage.setItem('mh3', JSON.stringify(hist)); } catch(_) {}
   renderHist();
- 
+
   setS('found', 'AR Card Active ✓');
   setTimeout(() => setS('scanning', 'Scanning…'), 6000);
 }
- 
+
 function hideAR3DCard() {
   document.getElementById('ar3DCard').classList.remove('show');
   cardVisible = false;
 }
- 
+
 /* ══════════════════════════════════════════════════════
    DETAIL DRAWER
 ══════════════════════════════════════════════════════ */
@@ -1365,11 +1365,11 @@ function fillDetailDrawer(drug, code) {
   const rxotc  = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
   const route  = f.route?.[0] || '—';
   const form   = f.dosage_form?.[0] || '—';
- 
+
   document.getElementById('dname').textContent = brand;
   document.getElementById('dgen').textContent = gen && gen.toUpperCase() !== brand ? gen : '';
   setBadge('dbadge', rxotc);
- 
+
   const grid = [
     { l: 'Manufacturer', v: mfr, c: '' },
     { l: 'Route', v: route, c: 'c1' },
@@ -1380,13 +1380,13 @@ function fillDetailDrawer(drug, code) {
   document.getElementById('ogrid').innerHTML = grid
     .map(i => `<div class="ibox"><div class="ilbl">${i.l}</div><div class="ival ${i.c}">${i.v}</div></div>`)
     .join('');
- 
+
   document.getElementById('purpose').textContent   = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 400);
   document.getElementById('dosage').textContent     = trunc(drug.dosage_and_administration?.[0] || '—', 500);
   document.getElementById('stopuse').textContent    = trunc(drug.stop_use?.[0] || 'Consult your doctor.', 300);
   document.getElementById('interactions').textContent = trunc(drug.drug_interactions?.[0] || '—', 500);
   document.getElementById('askdoc').textContent     = trunc(drug.ask_doctor_or_pharmacist?.[0] || drug.ask_doctor?.[0] || 'Ask your doctor or pharmacist.', 300);
- 
+
   let wb = '';
   if (drug.boxed_warning?.[0]) wb += `<div class="dbox"><div class="wico">☠️</div><div class="dtxt"><strong>BOXED WARNING:</strong> ${trunc(drug.boxed_warning[0], 300)}</div></div>`;
   if (drug.warnings?.[0]) wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0], 400)}</div></div>`;
@@ -1394,7 +1394,7 @@ function fillDetailDrawer(drug, code) {
   if (drug.adverse_reactions?.[0]) wb += `<div class="slbl">Side Effects</div><div class="prose">${trunc(drug.adverse_reactions[0], 400)}</div>`;
   document.getElementById('wbody').innerHTML = wb || '<div class="prose" style="color:var(--muted)">No specific warnings listed.</div>';
 }
- 
+
 function openDetailDrawer() {
   document.getElementById('detailDrawer').classList.add('open');
   goTab('overview');
@@ -1402,7 +1402,7 @@ function openDetailDrawer() {
 function closeDetailDrawer() {
   document.getElementById('detailDrawer').classList.remove('open');
 }
- 
+
 /* Search drawer */
 function openSearchDrawer() {
   document.getElementById('searchDrawer').style.display = 'block';
@@ -1411,7 +1411,7 @@ function openSearchDrawer() {
 function closeSearchDrawer() {
   document.getElementById('searchDrawer').style.display = 'none';
 }
- 
+
 /* ══════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════ */
@@ -1450,7 +1450,7 @@ function trunc(s, n) {
   s = s.replace(/\s+/g, ' ').trim();
   return s.length > n ? s.slice(0, n) + '…' : s;
 }
- 
+
 function renderHist() {
   renderHistIn('histWrap');
 }
@@ -1472,12 +1472,12 @@ function qs(name) {
   openSearchDrawer();
   doSearch();
 }
- 
+
 // Close detail drawer on backdrop tap
 document.getElementById('detailDrawer').addEventListener('click', function(e) {
   if (e.target === this) closeDetailDrawer();
 });
- 
+
 renderHist();
 </script>
 </body>
