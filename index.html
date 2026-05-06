@@ -2,1327 +2,716 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AR-MediScan</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I'm Sorryyy 🥺💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #020c16;
-    --surface: #081828;
-    --card: #0c1f30;
-    --border: #153048;
-    --accent: #00d4ff;
-    --accent2: #00ff9d;
-    --accent3: #ff6b35;
-    --text: #ddeef8;
-    --muted: #5a8aaa;
-    --danger: #ff4466;
-    --hdr-h: 50px;
-    --tab-h: 40px;
-    --top-h: 90px; /* hdr + tabs */
+    --pink: #ff6eb4;
+    --peach: #ffb4c2;
+    --lavender: #d4aaff;
+    --mint: #a8edcc;
+    --yellow: #ffe066;
+    --bg: #fff0f7;
+    --soft: #ffe4f0;
+    --deep-pink: #e0449a;
   }
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { height: 100%; overflow: hidden; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
     background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    height: 100%;
-    width: 100%;
-    position: fixed;
-    overflow: hidden;
-  }
-
-  /* ── SPLASH ── */
-  #splash {
-    position: fixed; inset: 0; background: var(--bg);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 2000; transition: opacity 0.6s ease; padding: 20px;
-  }
-  #splash.fade-out { opacity: 0; pointer-events: none; }
-  .splash-glow {
-    position: absolute; width: min(500px,130vw); height: min(500px,130vw); border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,212,255,0.13) 0%, transparent 70%);
-    animation: gpulse 3s ease-in-out infinite;
-  }
-  @keyframes gpulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-  .splash-icon { font-size: clamp(40px,10vw,60px); position: relative; z-index: 1; margin-bottom: 12px; }
-  .splash-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(32px,9vw,48px);
-    font-weight: 800;
-    background: linear-gradient(135deg, #fff 0%, var(--accent) 55%, var(--accent2) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    position: relative; z-index: 1; text-align: center;
-  }
-  .splash-sub {
-    font-size: clamp(9px,2.5vw,11px); color: var(--muted); letter-spacing: 0.18em;
-    text-transform: uppercase; margin-top: 8px; position: relative; z-index: 1; text-align: center;
-  }
-  .ar-true-badge {
-    margin-top: 16px; position: relative; z-index: 1;
-    background: linear-gradient(135deg, rgba(0,255,157,0.15), rgba(0,212,255,0.1));
-    border: 1.5px solid var(--accent2); border-radius: 20px; padding: 5px 14px;
-    font-family: 'Space Mono', monospace; font-size: clamp(8px,2vw,9px);
-    color: var(--accent2); letter-spacing: 0.1em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 7px;
-  }
-  .ar-true-badge::before {
-    content: ''; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--accent2); box-shadow: 0 0 8px var(--accent2);
-    animation: blink 1.4s infinite; flex-shrink: 0;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-  .splash-feats {
-    display: flex; gap: 14px; margin-top: 20px; position: relative;
-    z-index: 1; flex-wrap: wrap; justify-content: center;
-  }
-  .splash-feat {
-    text-align: center; font-size: 9px; color: var(--muted);
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-  .splash-feat span { font-size: 20px; }
-  .splash-btn {
-    margin-top: 24px; position: relative; z-index: 1;
-    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,255,157,0.08));
-    border: 1.5px solid var(--accent); color: var(--accent);
-    font-family: 'Space Mono', monospace; font-size: clamp(11px,3vw,13px);
-    padding: 13px 40px; border-radius: 3px; cursor: pointer;
-    letter-spacing: 0.1em; transition: all 0.2s; text-transform: uppercase; width: 100%; max-width: 300px;
-  }
-  .splash-btn:active { background: rgba(0,212,255,0.25); }
-
-  /* ── APP SHELL ── */
-  #app { display: none; flex-direction: column; height: 100%; width: 100%; position: fixed; inset: 0; }
-  #app.visible { display: flex; }
-
-  /* ── HEADER ── */
-  .hdr {
-    height: var(--hdr-h);
-    padding: 0 14px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: rgba(8,24,40,0.98);
-    z-index: 500; flex-shrink: 0;
-  }
-  .logo {
-    font-family: 'Syne', sans-serif; font-size: clamp(16px,5vw,20px); font-weight: 800;
-    background: linear-gradient(135deg, #fff, var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
-  .logo em { -webkit-text-fill-color: var(--accent2); font-style: normal; }
-  .status {
-    display: flex; align-items: center; gap: 5px;
-    font-family: 'Space Mono', monospace; font-size: 8px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 4px 9px; border-radius: 20px;
-  }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: all 0.3s; flex-shrink: 0; }
-  .dot.ready   { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); animation: blink 2s infinite; }
-  .dot.scanning{ background: var(--accent);  box-shadow: 0 0 8px var(--accent);  animation: blink 0.8s infinite; }
-  .dot.found   { background: var(--accent2); box-shadow: 0 0 14px var(--accent2); animation: none; }
-  .dot.err     { background: var(--danger);  box-shadow: 0 0 6px var(--danger); }
-
-  /* ── MODE TABS ── */
-  .mode-tabs {
-    height: var(--tab-h);
-    display: flex; background: var(--surface);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .mtab {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    gap: 6px; font-family: 'Space Mono', monospace; font-size: clamp(8px,2.2vw,9px);
-    text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
-  }
-  .mtab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,212,255,0.04); }
-  .mtab-icon { font-size: 14px; }
-
-  /* ── CONTENT AREA (below header + tabs) ── */
-  .content-area {
-    flex: 1;
-    overflow: hidden;
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
     position: relative;
   }
 
-  /* ═══════════════════════════════════
-     AR LIVE MODE — Real camera feed
-  ═══════════════════════════════════ */
-  #arModePanel {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-  }
-  #arModePanel.hidden { display: none; }
-
-  /* Camera viewport — fills all available space */
-  #camViewport {
-    position: relative; flex: 1; overflow: hidden; background: #000;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  /* The actual video — covers the viewport, object-fit like a background */
-  #camVideo {
-    position: absolute; inset: 0;
+  /* Floating hearts background */
+  .hearts-bg {
+    position: fixed;
+    top: 0; left: 0;
     width: 100%; height: 100%;
-    object-fit: cover;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .heart-float {
+    position: absolute;
+    bottom: -60px;
+    font-size: 1.5rem;
+    animation: floatUp linear infinite;
+    opacity: 0.5;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 60px;
+    gap: 28px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* Header card */
+  .header-card {
+    background: linear-gradient(135deg, #ff8ecf, #ffb3d9, #ffcce5);
+    border-radius: 30px;
+    padding: 30px 24px 24px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(255, 110, 180, 0.35);
+    width: 100%;
+    animation: dropIn 0.7s cubic-bezier(.22,1,.36,1) both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+
+  .header-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 90px; height: 90px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+  }
+
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-40px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .bear-emoji {
+    font-size: 5rem;
+    display: block;
+    animation: bounce 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 4px 12px rgba(255,110,180,0.4));
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .title {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.2rem;
+    color: #fff;
+    text-shadow: 0 3px 10px rgba(200,50,120,0.3);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Wiggle hearts row */
+  .hearts-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    font-size: 1.5rem;
+    animation: dropIn 0.7s 0.15s both;
+  }
+
+  .hearts-row span {
+    animation: wiggle 1.2s ease-in-out infinite;
+  }
+
+  .hearts-row span:nth-child(2) { animation-delay: 0.2s; }
+  .hearts-row span:nth-child(3) { animation-delay: 0.4s; }
+  .hearts-row span:nth-child(4) { animation-delay: 0.6s; }
+  .hearts-row span:nth-child(5) { animation-delay: 0.8s; }
+
+  @keyframes wiggle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.3) rotate(-10deg); }
+    75% { transform: scale(1.3) rotate(10deg); }
+  }
+
+  /* Apology card */
+  .apology-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 28px 22px;
+    width: 100%;
+    box-shadow: 0 6px 28px rgba(255,110,180,0.18);
+    border: 2px solid var(--peach);
+    animation: dropIn 0.7s 0.2s both;
+    text-align: center;
+  }
+
+  .apology-card .label {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: var(--deep-pink);
+    margin-bottom: 14px;
     display: block;
   }
 
-  /* Hidden canvas for ZXing decode */
-  #decodeCanvas { display: none; }
-
-  /* AR scan frame overlay */
-  .ar-hud {
-    position: absolute; inset: 0; pointer-events: none;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
-  }
-  /* Darkened corners to focus attention */
-  .ar-hud::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 55% 38% at 50% 50%, transparent 40%, rgba(2,12,22,0.55) 100%);
-  }
-  .frame-box {
-    width: min(260px, 72vw); height: min(150px, 42vw); position: relative; z-index: 1;
-  }
-  .c { position: absolute; width: 24px; height: 24px; border-color: var(--accent); border-style: solid; border-width: 0; }
-  .c.tl{top:0;left:0;border-top-width:3px;border-left-width:3px;border-radius:3px 0 0 0;}
-  .c.tr{top:0;right:0;border-top-width:3px;border-right-width:3px;border-radius:0 3px 0 0;}
-  .c.bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 3px;}
-  .c.br{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 3px 0;}
-  .sline {
-    position: absolute; left: 6px; right: 6px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent2), transparent);
-    box-shadow: 0 0 12px var(--accent2);
-    animation: smove 2.2s ease-in-out infinite;
-  }
-  @keyframes smove { 0%{top:4px;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:calc(100% - 4px);opacity:0} }
-
-  .scan-hint {
-    margin-top: 12px; font-family: 'Space Mono', monospace; font-size: clamp(9px,2.5vw,11px);
-    color: rgba(255,255,255,0.7); letter-spacing: 0.07em; text-transform: uppercase;
-    text-align: center; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-  }
-  .scan-tags { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; justify-content: center; z-index: 1; }
-  .stag {
-    font-family: 'Space Mono', monospace; font-size: 7px; padding: 2px 7px; border-radius: 2px;
-    border: 1px solid rgba(0,212,255,0.3); color: rgba(0,212,255,0.7);
-    background: rgba(2,12,22,0.6);
+  .apology-text {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.8;
+    font-weight: 600;
   }
 
-  /* AR mode pill */
-  .ar-mode-pill {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    z-index: 20; background: rgba(2,12,22,0.7); border: 1px solid rgba(0,212,255,0.4);
-    border-radius: 20px; padding: 4px 12px;
-    font-family: 'Space Mono', monospace; font-size: 8px; color: var(--accent);
-    text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
-    display: flex; align-items: center; gap: 6px; pointer-events: none;
+  .apology-text em {
+    color: var(--deep-pink);
+    font-style: normal;
+    font-weight: 800;
+  }
+
+  /* Sorry counter */
+  .sorry-counter {
+    background: linear-gradient(135deg, #ffe0f0, #ffd6ec);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+    border: 2px dashed var(--pink);
+    animation: dropIn 0.7s 0.3s both;
+  }
+
+  .sorry-counter p {
+    font-size: 0.9rem;
+    color: var(--deep-pink);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .counter-display {
+    font-family: 'Pacifico', cursive;
+    font-size: 3rem;
+    color: var(--deep-pink);
+    line-height: 1;
+  }
+
+  .counter-sub {
+    font-size: 0.8rem;
+    color: #e07bad;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .add-sorry-btn {
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--pink), var(--deep-pink));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(255,110,180,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .add-sorry-btn:active {
+    transform: scale(0.94);
+    box-shadow: 0 2px 8px rgba(255,110,180,0.3);
+  }
+
+  /* Mood selector */
+  .mood-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 24px 20px;
+    width: 100%;
+    box-shadow: 0 6px 28px rgba(255,110,180,0.15);
+    border: 2px solid #ffd6eb;
+    animation: dropIn 0.7s 0.4s both;
+    text-align: center;
+  }
+
+  .mood-card .label {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.4rem;
+    color: var(--deep-pink);
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .mood-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .mood-btn {
+    background: var(--soft);
+    border: 2px solid var(--peach);
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    color: var(--deep-pink);
+    transition: all 0.2s;
+  }
+
+  .mood-btn:hover, .mood-btn.selected {
+    background: linear-gradient(135deg, var(--pink), #ff9ecf);
+    color: white;
+    border-color: var(--pink);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(255,110,180,0.35);
+  }
+
+  .mood-response {
+    margin-top: 14px;
+    font-size: 1rem;
+    color: var(--deep-pink);
+    font-weight: 700;
+    min-height: 28px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.3rem;
+    transition: opacity 0.3s;
+  }
+
+  /* Secret message button */
+  .secret-section {
+    width: 100%;
+    text-align: center;
+    animation: dropIn 0.7s 0.5s both;
+  }
+
+  .secret-btn {
+    background: linear-gradient(135deg, #a78bfa, #c084fc, #e879f9);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 36px;
+    font-family: 'Pacifico', cursive;
+    font-size: 1.15rem;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(167,139,250,0.45);
+    transition: transform 0.15s, box-shadow 0.2s;
+    width: 100%;
+    letter-spacing: 0.5px;
+  }
+
+  .secret-btn:active {
+    transform: scale(0.96);
+  }
+
+  .secret-btn .btn-icon {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 4px;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+
+  /* Secret message popup */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(80, 0, 60, 0.55);
     backdrop-filter: blur(6px);
-  }
-  .ar-mode-pill-dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: blink 1s infinite;
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
   }
 
-  /* Camera controls overlay */
-  .cam-btns {
-    position: absolute; top: 10px; right: 10px;
-    display: flex; flex-direction: column; gap: 7px; z-index: 20; pointer-events: all;
+  .overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
   }
-  .cbtn {
-    width: 40px; height: 40px; border-radius: 50%; background: rgba(8,24,40,0.82);
-    border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; backdrop-filter: blur(6px); transition: all 0.2s; user-select: none;
-  }
-  .cbtn:active { transform: scale(0.92); }
-  .cbtn.on { border-color: var(--accent2); background: rgba(0,255,157,0.15); }
 
-  /* Search toggle */
-  #searchToggle {
-    position: absolute; top: 10px; left: 10px; z-index: 20;
-    width: 40px; height: 40px; border-radius: 50%; background: rgba(8,24,40,0.82);
-    border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; backdrop-filter: blur(6px); transition: all 0.2s;
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
-  #searchToggle:active { transform: scale(0.92); }
 
-  /* ── Camera permission prompt ── */
-  #camPermPrompt {
-    position: absolute; inset: 0; background: rgba(2,12,22,0.97);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; z-index: 50; padding: 28px; text-align: center;
+  .popup {
+    background: linear-gradient(145deg, #fff0fa, #ffe8f5, #fff5ff);
+    border-radius: 32px;
+    padding: 34px 26px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(200, 50, 150, 0.35);
+    border: 3px solid var(--peach);
+    position: relative;
+    animation: popIn 0.4s cubic-bezier(.22,1,.36,1) both;
   }
-  #camPermPrompt.hidden { display: none; }
-  .cp-icon { font-size: 44px; }
-  .cp-title { font-family: 'Syne', sans-serif; font-size: clamp(18px,5vw,22px); color: #fff; }
-  .cp-sub { font-size: 12px; color: var(--muted); line-height: 1.65; max-width: 280px; }
-  .cp-btn {
-    background: var(--accent); color: #000; border: none; border-radius: 4px;
-    padding: 13px 28px; font-family: 'Space Mono', monospace; font-size: 11px;
-    font-weight: 700; cursor: pointer; letter-spacing: 0.05em; width: 100%; max-width: 280px;
-  }
-  .cp-err { font-size: 11px; color: var(--danger); display: none; margin-top: -8px; }
 
-  /* ── 3D AR Floating Info Card ── */
-  #ar3DCard {
-    position: absolute; pointer-events: none; z-index: 30;
-    transform: translate(-50%, calc(-100% - 44px));
-    opacity: 0; transition: opacity 0.35s ease;
-    will-change: transform, opacity;
-    /* prevent going off-screen */
-    max-width: min(280px, 88vw);
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
   }
-  #ar3DCard.show { opacity: 1; pointer-events: all; }
-  .ar3d-inner {
-    background: rgba(2, 14, 26, 0.94);
-    border: 1.5px solid rgba(0, 212, 255, 0.55);
-    border-radius: 10px;
-    backdrop-filter: blur(18px);
-    box-shadow: 0 0 0 1px rgba(0,212,255,0.1), 0 8px 40px rgba(0,0,0,0.7), 0 0 60px rgba(0,212,255,0.07);
+
+  .popup-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: var(--soft);
+    border: none;
+    border-radius: 50%;
+    width: 34px; height: 34px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--deep-pink);
+    font-weight: 800;
+    transition: transform 0.15s;
+  }
+
+  .popup-close:hover { transform: scale(1.15); }
+
+  .popup-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 12px;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .popup-title {
+    font-family: 'Pacifico', cursive;
+    font-size: 1.5rem;
+    color: var(--deep-pink);
+    margin-bottom: 16px;
+  }
+
+  .popup-msg {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.35rem;
+    color: #7c3a6d;
+    line-height: 1.75;
+    background: rgba(255,182,220,0.18);
+    border-radius: 18px;
+    padding: 16px 14px;
+    border: 1.5px dashed var(--peach);
+  }
+
+  .popup-footer {
+    margin-top: 16px;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  /* Forgive button */
+  .forgive-section {
+    width: 100%;
+    animation: dropIn 0.7s 0.6s both;
+  }
+
+  .forgive-btn {
+    background: linear-gradient(135deg, #ff6eb4, #ff4fa0, #e0449a);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 36px;
+    font-family: 'Pacifico', cursive;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(255,110,180,0.5);
+    width: 100%;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .forgive-btn:active { transform: scale(0.96); }
+
+  .forgave-msg {
+    display: none;
+    margin-top: 14px;
+    background: linear-gradient(135deg, #ffe0f5, #ffd6ed);
+    border-radius: 18px;
+    padding: 16px;
+    text-align: center;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.35rem;
+    color: var(--deep-pink);
+    border: 2px solid var(--peach);
+  }
+
+  .forgave-msg.show { display: block; animation: dropIn 0.4s both; }
+
+  /* Sticker strip */
+  .sticker-strip {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: dropIn 0.7s 0.7s both;
+    font-size: 2rem;
+  }
+
+  .sticker {
+    cursor: pointer;
+    transition: transform 0.15s;
+    display: inline-block;
+    filter: drop-shadow(0 2px 6px rgba(255,110,180,0.3));
+  }
+
+  .sticker:hover { transform: scale(1.3) rotate(-8deg); }
+
+  /* Confetti burst */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 200;
     overflow: hidden;
-    animation: cardIn 0.4s cubic-bezier(0.16,1,0.3,1);
   }
-  @keyframes cardIn { from{transform:scale(0.82) translateY(10px);opacity:0} to{transform:scale(1);opacity:1} }
-  .tether { width: 2px; height: 30px; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0)); margin: 0 auto; }
-  .tether-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); margin: 0 auto; animation: tdot 1.2s ease-in-out infinite; }
-  @keyframes tdot { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
-  .ar3d-top {
-    padding: 10px 13px 8px;
-    border-bottom: 1px solid rgba(0,212,255,0.12);
-    background: linear-gradient(135deg, rgba(0,212,255,0.07), rgba(0,255,157,0.03));
-  }
-  .ar3d-brand { font-family: 'Syne', sans-serif; font-size: clamp(13px,4vw,15px); font-weight: 800; color: #fff; line-height: 1.2; }
-  .ar3d-gen { font-size: 9px; color: var(--muted); font-style: italic; margin-top: 2px; }
-  .ar3d-badge { display: inline-block; margin-top: 4px; font-family: 'Space Mono', monospace; font-size: 7px; padding: 2px 7px; border-radius: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .ar3d-badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
-  .ar3d-badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
-  .ar3d-chips { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; padding: 8px 11px; border-bottom: 1px solid rgba(0,212,255,0.08); }
-  .ar3d-chip { text-align: center; }
-  .ar3d-chip-l { font-family: 'Space Mono', monospace; font-size: 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .ar3d-chip-v { font-size: clamp(9px,2.5vw,10px); color: var(--text); margin-top: 2px; font-weight: 500; line-height: 1.3; }
-  .ar3d-purpose { padding: 8px 13px; font-size: 9.5px; color: var(--muted); line-height: 1.55; border-bottom: 1px solid rgba(0,212,255,0.08); max-height: 72px; overflow: hidden; }
-  .ar3d-slbl { font-family: 'Space Mono', monospace; font-size: 7px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 3px; }
-  .ar3d-warn { padding: 6px 13px; background: rgba(255,204,0,0.05); border-bottom: 1px solid rgba(255,204,0,0.1); font-size: 9px; color: rgba(255,220,80,0.85); line-height: 1.5; display: none; }
-  .ar3d-warn.show { display: block; }
-  .ar3d-footer { padding: 7px 13px; display: flex; align-items: center; justify-content: space-between; }
-  .ar3d-code { font-family: 'Space Mono', monospace; font-size: 7px; color: rgba(0,212,255,0.4); letter-spacing: 0.04em; }
-  .ar3d-detail-btn {
-    font-family: 'Space Mono', monospace; font-size: 8px; padding: 4px 10px;
-    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
-    color: var(--accent); border-radius: 3px; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; pointer-events: all;
-  }
-  .ar3d-detail-btn:active { background: rgba(0,212,255,0.22); }
 
-  /* ── UPLOAD MODE ── */
-  #uploadPanel {
-    position: absolute; inset: 0;
-    display: none; flex-direction: column;
-    overflow-y: auto; padding: 14px; gap: 12px;
-    -webkit-overflow-scrolling: touch;
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
   }
-  #uploadPanel.visible { display: flex; }
-  .drop-zone {
-    border: 2px dashed var(--border); border-radius: 8px;
-    padding: 28px 18px; text-align: center; cursor: pointer;
-    transition: all 0.25s; position: relative; background: var(--surface); flex-shrink: 0;
-  }
-  .drop-zone.dragover { border-color: var(--accent); background: rgba(0,212,255,0.06); }
-  #imgFileInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .dz-icon { font-size: 34px; margin-bottom: 8px; }
-  .dz-title { font-family: 'Syne', sans-serif; font-size: 14px; color: #fff; margin-bottom: 4px; }
-  .dz-sub { font-size: 11px; color: var(--muted); line-height: 1.55; }
-  .dz-or { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; flex-shrink: 0; }
-  .dz-or::before, .dz-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .cam-capture-btn {
-    width: 100%; background: rgba(0,212,255,0.08); border: 1.5px solid rgba(0,212,255,0.3);
-    color: var(--accent); border-radius: 6px; padding: 12px;
-    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.07em;
-    cursor: pointer; text-transform: uppercase;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all 0.2s; position: relative; flex-shrink: 0;
-  }
-  #captureInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  #imgPreviewWrap { display: none; flex-shrink: 0; }
-  .preview-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .preview-top { position: relative; background: #000; display: flex; align-items: center; justify-content: center; min-height: 140px; max-height: 240px; overflow: hidden; }
-  #previewImg { max-width: 100%; max-height: 240px; display: block; object-fit: contain; }
-  .preview-scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2,12,22,0.75); flex-direction: column; gap: 10px; }
-  .preview-scan-overlay.hidden { display: none; }
-  .pspin { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .pspin-txt { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.06em; }
-  .preview-result { padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .pr-code { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); word-break: break-all; }
-  .pr-fmt { font-family: 'Space Mono', monospace; font-size: 8px; padding: 2px 7px; border-radius: 2px; background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); white-space: nowrap; }
-  .pr-err { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--danger); }
-  .clear-btn { margin-top: 8px; width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 9px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer; }
-  .tips-box { background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.12); border-radius: 6px; padding: 11px 13px; flex-shrink: 0; }
-  .tips-title { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 7px; }
-  .tip { font-size: 11px; color: var(--muted); line-height: 1.5; display: flex; gap: 6px; margin-bottom: 3px; }
-  .tip::before { content: '›'; color: var(--accent); flex-shrink: 0; }
-  #histWrapUpload { flex-shrink: 0; padding-bottom: 14px; }
 
-  /* ── DETAIL DRAWER ── */
-  #detailDrawer {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
-    background: var(--surface); border-top: 1.5px solid var(--border);
-    border-radius: 16px 16px 0 0;
-    max-height: 78vh; overflow-y: auto;
-    transform: translateY(100%);
-    transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
-    box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
-    -webkit-overflow-scrolling: touch;
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
   }
-  #detailDrawer.open { transform: translateY(0); }
-  #detailBackdrop { position: fixed; inset: 0; z-index: 599; background: rgba(0,0,0,0.5); display: none; }
-  #detailBackdrop.show { display: block; }
-  .drawer-handle { width: 38px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; cursor: pointer; }
-  .drawer-close { position: absolute; top: 10px; right: 14px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; background: var(--card); border: 1px solid var(--border); padding: 4px 9px; border-radius: 3px; }
-  .dhead { padding: 10px 15px; border-bottom: 1px solid var(--border); background: rgba(0,212,255,0.03); margin-top: 6px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .dname { font-family: 'Syne', sans-serif; font-size: clamp(16px,5vw,19px); font-weight: 700; color: #fff; }
-  .dgen { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 2px; }
-  .badge { font-family: 'Space Mono', monospace; font-size: 7px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; margin-top: 3px; }
-  .badge.otc { background: rgba(0,255,157,0.15); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
-  .badge.rx  { background: rgba(255,107,53,0.15); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
-  .tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { padding: 9px 14px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .pane { display: none; padding: 13px 15px; }
-  .pane.active { display: block; }
-  .igrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 11px; }
-  .ibox { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 8px 11px; }
-  .ilbl { font-family: 'Space Mono', monospace; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 2px; }
-  .ival { font-size: 11px; color: var(--text); font-weight: 500; line-height: 1.3; }
-  .ival.c1{color:var(--accent)} .ival.c2{color:var(--accent2)} .ival.c3{color:var(--accent3)}
-  .slbl { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); margin: 11px 0 5px; }
-  .slbl:first-child { margin-top: 0; }
-  .prose { font-size: 12px; color: var(--text); line-height: 1.62; }
-  .wbox { background: rgba(255,204,0,0.07); border: 1px solid rgba(255,204,0,0.2); border-radius: 4px; padding: 9px 11px; margin-bottom: 7px; display: flex; gap: 7px; }
-  .wico { font-size: 13px; flex-shrink: 0; }
-  .wtxt { font-size: 11px; color: rgba(255,220,80,0.9); line-height: 1.5; }
-  .dbox { background: rgba(255,68,102,0.07); border: 1px solid rgba(255,68,102,0.22); border-radius: 4px; padding: 9px 11px; margin-bottom: 7px; display: flex; gap: 7px; }
-  .dtxt { font-size: 11px; color: rgba(255,110,140,0.9); line-height: 1.5; }
 
-  /* ── Search bar ── */
-  #searchBar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 700;
-    padding: 10px 12px;
-    background: rgba(8,24,40,0.98);
-    border-top: 1px solid var(--border);
-    display: flex; gap: 7px;
-    backdrop-filter: blur(12px);
-  }
-  .sinput {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 4px; padding: 10px 12px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
-    transition: border-color 0.2s;
-  }
-  .sinput:focus { border-color: var(--accent); }
-  .sinput::placeholder { color: var(--muted); }
-  .sbtn {
-    background: var(--accent); color: #000; border: none; border-radius: 4px;
-    padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 10px;
-    font-weight: 700; cursor: pointer; white-space: nowrap;
-  }
-  .sbtn.cancel { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-
-  /* History */
-  .hlbl { font-family: 'Space Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 7px; }
-  .hitem { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.2s; margin-bottom: 5px; }
-  .hitem:active { border-color: var(--accent); }
-  .hname { font-size: 13px; color: var(--text); font-weight: 500; }
-  .hcode { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
-
-  /* Loading overlay */
-  #loadingOverlay {
-    position: fixed; inset: 0; z-index: 800;
-    background: rgba(2,12,22,0.75); backdrop-filter: blur(4px);
-    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
-  }
-  #loadingOverlay.show { display: flex; }
-  .lspinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  .ltxt { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.06em; text-align: center; }
-
-  /* Toast */
-  .toast {
-    position: fixed; top: calc(var(--top-h) + 8px); left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-    background: rgba(2,12,22,0.96); border: 1px solid var(--border); color: var(--text);
-    padding: 8px 16px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 10px;
-    opacity: 0; transition: all 0.3s; z-index: 1000; pointer-events: none;
-    white-space: nowrap; max-width: 90vw; text-align: center; text-overflow: ellipsis; overflow: hidden;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.err { border-color: rgba(255,68,102,0.4); color: #ff8899; }
-  .toast.ok  { border-color: rgba(0,255,157,0.4); color: var(--accent2); }
-
-  #flash { position: fixed; inset: 0; background: rgba(0,255,157,0.07); pointer-events: none; opacity: 0; z-index: 99; }
-  #flash.go { animation: fgo 0.5s ease; }
-  @keyframes fgo { 0%{opacity:1} 100%{opacity:0} }
-
-  @media(min-width:480px) {
-    .igrid { grid-template-columns: repeat(3,1fr); }
-    .frame-box { width: 280px; height: 160px; }
-  }
-  @media(min-width:600px) {
-    #ar3DCard { max-width: 300px; }
+  /* Footer */
+  .footer-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.2rem;
+    color: #e07bad;
+    text-align: center;
+    animation: dropIn 0.7s 0.8s both;
   }
 </style>
 </head>
 <body>
-<div id="flash"></div>
-<div class="toast" id="toast"></div>
-<canvas id="decodeCanvas"></canvas>
 
-<!-- Loading overlay -->
-<div id="loadingOverlay">
-  <div class="lspinner"></div>
-  <div class="ltxt" id="ltxt">Looking up…</div>
+<!-- Floating hearts background -->
+<div class="hearts-bg" id="heartsBg"></div>
+
+<!-- Confetti container -->
+<div class="confetti-container" id="confetti"></div>
+
+<!-- Secret message popup -->
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <span class="popup-icon">🐻</span>
+    <div class="popup-title">For you, my love 💌</div>
+    <div class="popup-msg">
+      "I'm so sorry, my babu 🥺<br>
+      I slept the whole day,<br>
+      I'm so so sorry, my love.. 💗<br>
+      Please forgive me, baby —<br>
+      I know you're in pain right now,<br>
+      and I just want to make you feel<br>
+      all goody goody again 🌸<br>
+      my lovely baby.. cutuuu. 🐣<br>
+      I want to talk to you<br>
+      so so much, you know naa —<br>
+      my cutu babu." 💕
+    </div>
+    <div class="popup-footer">💗🐻💗🐻💗</div>
+  </div>
 </div>
 
-<!-- Detail backdrop -->
-<div id="detailBackdrop" onclick="closeDetailDrawer()"></div>
+<div class="wrapper">
 
-<!-- ══════════════════════════════════════ SPLASH ══════════════════════════════════════ -->
-<div id="splash">
-  <div class="splash-glow"></div>
-  <div class="splash-icon">💊</div>
-  <div class="splash-logo">AR·MediScan</div>
-  <div class="splash-sub">Real-Time Medicine AR Scanner</div>
-  <div class="ar-true-badge">Live Camera · Barcode Detection · FDA Data</div>
-  <div class="splash-feats">
-    <div class="splash-feat"><span>⬛</span>DataMatrix</div>
-    <div class="splash-feat"><span>📦</span>Barcodes</div>
-    <div class="splash-feat"><span>📱</span>QR Codes</div>
-    <div class="splash-feat"><span>🖼️</span>Image Scan</div>
-    <div class="splash-feat"><span>🏥</span>FDA Data</div>
-  </div>
-  <button class="splash-btn" onclick="startApp()">► Launch Scanner</button>
-</div>
-
-<!-- ══════════════════════════════════════ APP ══════════════════════════════════════ -->
-<div id="app">
-  <div class="hdr">
-    <div class="logo">AR·<em>Medi</em>Scan</div>
-    <div class="status"><div class="dot" id="dot"></div><span id="stxt">Ready</span></div>
+  <!-- Header -->
+  <div class="header-card">
+    <span class="bear-emoji">🐻</span>
+    <div class="title">I'm Sorryyy!</div>
+    <div class="subtitle">Please forgive me, love 🥺💕</div>
   </div>
 
-  <div class="mode-tabs">
-    <div class="mtab active" id="mtab-live" onclick="switchMode('live')">
-      <span class="mtab-icon">📷</span> AR Live Scan
+  <!-- Hearts row -->
+  <div class="hearts-row">
+    <span>💗</span><span>🌸</span><span>💕</span><span>🌸</span><span>💗</span>
+  </div>
+
+  <!-- Apology card -->
+  <div class="apology-card">
+    <span class="label">For my most favourite person 🥺</span>
+    <p class="apology-text">
+      My love, <em>I'm so genuinely sorry</em>. I know I slept the whole day
+      and you were waiting for me — that was really not okay.
+      <em>You mean everything to me</em> and the last thing I ever want
+      is to make you feel ignored or alone.
+      <em>I know you're in pain right now</em>, baby, and I just wish
+      I could take it all away and make everything feel better for you. 💗
+    </p>
+  </div>
+
+  <!-- Sorry counter -->
+  <div class="sorry-counter">
+    <p>💌 Times I've said sorry so far —</p>
+    <div class="counter-display" id="sorryCount">1</div>
+    <div class="counter-sub">and counting, baby! 🥺</div>
+    <button class="add-sorry-btn" onclick="addSorry()">+ One more Sorry 🌸</button>
+  </div>
+
+  <!-- Mood selector -->
+  <div class="mood-card">
+    <span class="label">How are you feeling right now? 🤍</span>
+    <div class="mood-buttons">
+      <button class="mood-btn" onclick="selectMood(this, 'angry')">😡 Still Angry</button>
+      <button class="mood-btn" onclick="selectMood(this, 'sad')">😢 Sad & hurt</button>
+      <button class="mood-btn" onclick="selectMood(this, 'meh')">😶 Don't know yet</button>
+      <button class="mood-btn" onclick="selectMood(this, 'forgive')">🥺 Ready to forgive</button>
     </div>
-    <div class="mtab" id="mtab-upload" onclick="switchMode('upload')">
-      <span class="mtab-icon">🖼️</span> Upload Image
+    <div class="mood-response" id="moodResponse"></div>
+  </div>
+
+  <!-- Secret message button -->
+  <div class="secret-section">
+    <button class="secret-btn" onclick="openPopup()">
+      <span class="btn-icon">💌</span>
+      Tap here — I wrote something just for you 💌
+    </button>
+  </div>
+
+  <!-- Forgive button -->
+  <div class="forgive-section">
+    <button class="forgive-btn" onclick="forgive()">
+      💗 Maaf Kar Diya! 💗
+    </button>
+    <div class="forgave-msg" id="forgaveMsg">
+      Yayyyy!! 🎉🎊 Thank you sooo much, my baby!! 🐻💕 You're my whole world! Now go feel goody goody okay? 🌸✨
     </div>
   </div>
 
-  <div class="content-area">
-
-    <!-- ═══════════════ AR LIVE MODE ═══════════════ -->
-    <div id="arModePanel">
-      <div id="camViewport">
-
-        <!-- REAL camera video feed -->
-        <video id="camVideo" autoplay playsinline muted></video>
-
-        <!-- Camera permission prompt -->
-        <div id="camPermPrompt">
-          <div class="cp-icon">📷</div>
-          <div class="cp-title">Camera Access Needed</div>
-          <div class="cp-sub">AR-MediScan needs your camera to scan medicines in real-time. Your camera feed is never recorded or stored.</div>
-          <button class="cp-btn" onclick="startARCamera()">Allow Camera &amp; Start Scanning</button>
-          <div class="cp-err" id="cpErr">Permission denied. Use the Upload Image tab to scan from a photo.</div>
-        </div>
-
-        <!-- AR HUD overlay -->
-        <div class="ar-hud" id="arHud">
-          <div class="frame-box">
-            <div class="c tl"></div><div class="c tr"></div>
-            <div class="c bl"></div><div class="c br"></div>
-            <div class="sline"></div>
-          </div>
-          <div class="scan-hint" id="scanHint">Align barcode · DataMatrix · QR</div>
-          <div class="scan-tags">
-            <span class="stag">EAN/UPC</span>
-            <span class="stag">DataMatrix</span>
-            <span class="stag">QR</span>
-            <span class="stag">Code128</span>
-          </div>
-        </div>
-
-        <!-- AR mode pill -->
-        <div class="ar-mode-pill">
-          <div class="ar-mode-pill-dot"></div>
-          Live AR Scan
-        </div>
-
-        <!-- Camera controls -->
-        <div class="cam-btns">
-          <div class="cbtn" id="torchBtn" onclick="toggleTorch()" title="Torch">🔦</div>
-          <div class="cbtn" onclick="flipCam()" title="Flip camera">🔄</div>
-        </div>
-
-        <!-- Search toggle -->
-        <div id="searchToggle" onclick="openSearchDrawer()" title="Manual search">🔍</div>
-
-        <!-- 3D AR Floating Info Card -->
-        <div id="ar3DCard">
-          <div class="tether"></div>
-          <div class="tether-dot"></div>
-          <div class="ar3d-inner">
-            <div class="ar3d-top">
-              <div class="ar3d-brand" id="ar3dBrand">—</div>
-              <div class="ar3d-gen" id="ar3dGen"></div>
-              <div class="ar3d-badge otc" id="ar3dBadge">OTC</div>
-            </div>
-            <div class="ar3d-chips">
-              <div class="ar3d-chip"><div class="ar3d-chip-l">Route</div><div class="ar3d-chip-v" id="ar3dRoute">—</div></div>
-              <div class="ar3d-chip"><div class="ar3d-chip-l">Form</div><div class="ar3d-chip-v" id="ar3dForm">—</div></div>
-              <div class="ar3d-chip"><div class="ar3d-chip-l">Type</div><div class="ar3d-chip-v" id="ar3dType">—</div></div>
-            </div>
-            <div class="ar3d-purpose">
-              <div class="ar3d-slbl">Purpose</div>
-              <div id="ar3dPurpose" style="font-size:9.5px;color:var(--muted);line-height:1.55;"></div>
-            </div>
-            <div class="ar3d-warn" id="ar3dWarn">
-              <div class="ar3d-slbl">⚠ Warning</div>
-              <div id="ar3dWarnTxt"></div>
-            </div>
-            <div class="ar3d-footer">
-              <div class="ar3d-code" id="ar3dCode"></div>
-              <button class="ar3d-detail-btn" onclick="openDetailDrawer()">Full Info ›</button>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /camViewport -->
-
-      <!-- Scan history below camera (scrollable if content-area is taller) -->
-      <div id="histWrapLive" style="background:var(--bg);padding:12px 14px;display:none;overflow-y:auto;max-height:200px;"></div>
-    </div>
-
-    <!-- ═══════════════ UPLOAD MODE ═══════════════ -->
-    <div id="uploadPanel">
-      <div class="drop-zone" id="dropZone">
-        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFile(this.files[0])">
-        <div class="dz-icon">🖼️</div>
-        <div class="dz-title">Drop a medicine image here</div>
-        <div class="dz-sub">JPG, PNG, WEBP · Supports any barcode, QR or DataMatrix on packaging</div>
-      </div>
-
-      <div class="dz-or">or</div>
-
-      <button class="cam-capture-btn">
-        <input type="file" id="captureInput" accept="image/*" capture="environment" onchange="handleImageFile(this.files[0])">
-        📸 Take Photo with Camera
-      </button>
-
-      <div id="imgPreviewWrap">
-        <div class="preview-card">
-          <div class="preview-top">
-            <img id="previewImg" alt="">
-            <div class="preview-scan-overlay" id="scanOverlay">
-              <div class="pspin"></div>
-              <div class="pspin-txt">Decoding barcode…</div>
-            </div>
-          </div>
-          <div class="preview-result" id="previewResult"></div>
-        </div>
-        <button class="clear-btn" onclick="clearImage()">✕ Clear Image</button>
-      </div>
-
-      <div class="tips-box">
-        <div class="tips-title">📌 Tips for best results</div>
-        <div class="tip">Good lighting — avoid shadows over the barcode</div>
-        <div class="tip">Hold camera 5–15 cm from barcode, keep it steady</div>
-        <div class="tip">Full barcode must be visible — not cut off at edges</div>
-        <div class="tip">Works with EAN-13, UPC, QR, DataMatrix, Code128</div>
-      </div>
-
-      <div id="histWrapUpload"></div>
-    </div>
-
-  </div><!-- /content-area -->
-</div><!-- /app -->
-
-<!-- ══════════════════════════════════════
-     DETAIL DRAWER
-══════════════════════════════════════ -->
-<div id="detailDrawer">
-  <div class="drawer-handle" onclick="closeDetailDrawer()"></div>
-  <div style="position:relative;min-height:28px;">
-    <div class="drawer-close" onclick="closeDetailDrawer()">✕ Close</div>
+  <!-- Sticker strip -->
+  <div class="sticker-strip">
+    <span class="sticker" onclick="popSticker(this)">🌸</span>
+    <span class="sticker" onclick="popSticker(this)">🐻</span>
+    <span class="sticker" onclick="popSticker(this)">💕</span>
+    <span class="sticker" onclick="popSticker(this)">🌷</span>
+    <span class="sticker" onclick="popSticker(this)">✨</span>
+    <span class="sticker" onclick="popSticker(this)">🍓</span>
+    <span class="sticker" onclick="popSticker(this)">💗</span>
   </div>
-  <div class="dhead">
-    <div><div class="dname" id="dname">—</div><div class="dgen" id="dgen"></div></div>
-    <div class="badge otc" id="dbadge">OTC</div>
-  </div>
-  <div class="tabs">
-    <div class="tab active" onclick="goTab('overview')">Overview</div>
-    <div class="tab" onclick="goTab('dosage')">Dosage</div>
-    <div class="tab" onclick="goTab('warnings')">Warnings</div>
-    <div class="tab" onclick="goTab('interactions')">Interactions</div>
-  </div>
-  <div class="pane active" id="p-overview">
-    <div class="igrid" id="ogrid"></div>
-    <div class="slbl">Purpose / Indications</div>
-    <div class="prose" id="purpose"></div>
-  </div>
-  <div class="pane" id="p-dosage">
-    <div class="slbl">Dosage &amp; Administration</div>
-    <div class="prose" id="dosage"></div>
-    <div class="slbl">Stop Use If</div>
-    <div class="prose" id="stopuse"></div>
-  </div>
-  <div class="pane" id="p-warnings"><div id="wbody"></div></div>
-  <div class="pane" id="p-interactions">
-    <div class="slbl">Drug Interactions</div>
-    <div class="prose" id="interactions"></div>
-    <div class="slbl">Ask Doctor / Pharmacist</div>
-    <div class="prose" id="askdoc"></div>
-  </div>
-  <div style="height:24px;"></div>
-</div>
 
-<!-- Search bar -->
-<div id="searchBar" style="display:none;">
-  <input class="sinput" id="sinput" type="text" placeholder="Type medicine name…" onkeydown="if(event.key==='Enter')doSearch()">
-  <button class="sbtn" onclick="doSearch()">Go</button>
-  <button class="sbtn cancel" onclick="closeSearchDrawer()">✕</button>
+  <div class="footer-text">Yours forever & always, love 🐻💕</div>
+
 </div>
 
 <script>
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
-let activeStream = null;
-let facing = 'environment';
-let torchOn = false;
-let lastCode = '';
-let cooldown = false;
-let currentDrug = null;
-let currentMode = 'live';
-let arStarted = false;
-let cardVisible = false;
-let barcodeScreenX = 50, barcodeScreenY = 50;
-let frameIntervalId = null;
-let cardAnimId = null;
+  // Floating hearts
+  const heartsContainer = document.getElementById('heartsBg');
+  const heartEmojis = ['💗','💕','🌸','✨','💝','🌷','💖'];
+  function spawnHeart() {
+    const h = document.createElement('span');
+    h.className = 'heart-float';
+    h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+    h.style.animationDuration = (6 + Math.random() * 8) + 's';
+    h.style.animationDelay = (Math.random() * 4) + 's';
+    heartsContainer.appendChild(h);
+    setTimeout(() => h.remove(), 14000);
+  }
+  for (let i = 0; i < 10; i++) setTimeout(spawnHeart, i * 500);
+  setInterval(spawnHeart, 1200);
 
-let hist = [];
-try { hist = JSON.parse(localStorage.getItem('mh3') || '[]'); } catch(_) {}
+  // Sorry counter
+  let count = 1;
+  function addSorry() {
+    count++;
+    const el = document.getElementById('sorryCount');
+    el.style.transform = 'scale(1.4)';
+    el.textContent = count;
+    setTimeout(() => el.style.transform = 'scale(1)', 200);
+  }
 
-/* ══════════════════════════════════════════
-   SPLASH
-══════════════════════════════════════════ */
-function startApp() {
-  const splash = document.getElementById('splash');
-  splash.classList.add('fade-out');
-  setTimeout(() => {
-    splash.style.display = 'none';
-    document.getElementById('app').classList.add('visible');
-    renderHist();
-    // Check if permission already granted
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'camera' }).then(res => {
-        if (res.state === 'granted') startARCamera();
-      }).catch(() => {});
-    }
-  }, 600);
-}
+  // Mood responses
+  const moodResponses = {
+    angry: "You have every right to be, love. I'm not even going to argue that 🥺 I'm really truly sorry. 💗",
+    sad: "Please don't cry, baby 😢 It breaks me knowing I made you feel this way. I'm so sorry from the bottom of my heart 💕",
+    meh: "That's okay, take your time, love. Just know I'm here — always yours 🐻✨",
+    forgive: "YAYYYY!! 🎉🎊💗 You're the absolute best, my cutu!! I love you so so much!! 🌸🐻"
+  };
 
-/* ══════════════════════════════════════════
-   MODE SWITCH
-══════════════════════════════════════════ */
-function switchMode(mode) {
-  currentMode = mode;
-  ['live','upload'].forEach(m => {
-    document.getElementById('mtab-' + m).classList.toggle('active', m === mode);
+  function selectMood(btn, mood) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const resp = document.getElementById('moodResponse');
+    resp.style.opacity = 0;
+    setTimeout(() => {
+      resp.textContent = moodResponses[mood];
+      resp.style.opacity = 1;
+    }, 200);
+    if (mood === 'forgive') launchConfetti();
+  }
+
+  // Popup
+  function openPopup() {
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closePopup() {
+    document.getElementById('overlay').classList.remove('show');
+  }
+  document.getElementById('overlay').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
   });
-  document.getElementById('arModePanel').classList.toggle('hidden', mode !== 'live');
-  document.getElementById('uploadPanel').classList.toggle('visible', mode === 'upload');
-  if (mode === 'upload') renderHistIn('histWrapUpload');
-}
 
-/* ══════════════════════════════════════════
-   CAMERA SETUP — proper getUserMedia + video element
-══════════════════════════════════════════ */
-async function startARCamera() {
-  if (arStarted) return;
-  setS('ready', 'Starting…');
-
-  const video = document.getElementById('camVideo');
-  const prompt = document.getElementById('camPermPrompt');
-
-  try {
-    // Stop any existing stream
-    if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
-
-    const constraints = {
-      video: {
-        facingMode: { ideal: facing },
-        width:  { ideal: 1280, min: 640 },
-        height: { ideal: 720,  min: 480 },
-        frameRate: { ideal: 30 }
-      },
-      audio: false
-    };
-
-    activeStream = await navigator.mediaDevices.getUserMedia(constraints);
-
-    // Attach stream directly to video element
-    video.srcObject = activeStream;
-
-    // Wait for video to be ready
-    await new Promise((resolve, reject) => {
-      video.onloadedmetadata = () => {
-        video.play().then(resolve).catch(reject);
-      };
-      video.onerror = reject;
-      setTimeout(resolve, 3000); // fallback
-    });
-
-    prompt.classList.add('hidden');
-    arStarted = true;
-    setS('scanning', 'Scanning…');
-    startZXing();
-    startCardLoop();
-
-  } catch(e) {
-    console.error('Camera error:', e);
-    arStarted = false;
-    const errEl = document.getElementById('cpErr');
-    if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-      setS('err', 'Denied');
-      errEl.style.display = 'block';
-      errEl.textContent = 'Camera permission denied. Please allow camera access in your browser settings, or use the Upload Image tab.';
-      showToast('Camera denied — use Upload Image tab', 'err');
-    } else if (e.name === 'NotFoundError') {
-      setS('err', 'No camera');
-      errEl.style.display = 'block';
-      errEl.textContent = 'No camera found on this device. Use the Upload Image tab to scan a photo.';
-      showToast('No camera found', 'err');
-    } else {
-      setS('err', 'Camera error');
-      errEl.style.display = 'block';
-      errEl.textContent = 'Camera unavailable (' + (e.message || e.name) + '). Try the Upload Image tab.';
-      showToast('Camera error — try Upload Image tab', 'err');
-    }
-  }
-}
-
-/* ══════════════════════════════════════════
-   ZXING SCANNING — reads from the live video
-══════════════════════════════════════════ */
-function startZXing() {
-  const video  = document.getElementById('camVideo');
-  const canvas = document.getElementById('decodeCanvas');
-  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
-
-  const hints = new Map();
-  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-    ZXing.BarcodeFormat.DATA_MATRIX,
-    ZXing.BarcodeFormat.QR_CODE,
-    ZXing.BarcodeFormat.EAN_13,
-    ZXing.BarcodeFormat.EAN_8,
-    ZXing.BarcodeFormat.UPC_A,
-    ZXing.BarcodeFormat.UPC_E,
-    ZXing.BarcodeFormat.CODE_128,
-    ZXing.BarcodeFormat.CODE_39,
-    ZXing.BarcodeFormat.ITF,
-    ZXing.BarcodeFormat.PDF_417,
-    ZXing.BarcodeFormat.AZTEC,
-  ]);
-  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-
-  const zreader = new ZXing.BrowserMultiFormatReader(hints);
-
-  // Stop old interval if any
-  if (frameIntervalId) clearInterval(frameIntervalId);
-
-  frameIntervalId = setInterval(() => {
-    if (!video.videoWidth || !video.videoHeight || video.readyState < 2) return;
-
-    const vw = video.videoWidth;
-    const vh = video.videoHeight;
-
-    // Decode at native resolution for accuracy
-    canvas.width  = vw;
-    canvas.height = vh;
-    ctx.drawImage(video, 0, 0, vw, vh);
-
-    try {
-      const lum = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
-      const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-      const result = zreader.decodeBitmap(bmp);
-
-      if (result) {
-        // Get barcode position on screen
-        const pts = result.getResultPoints ? result.getResultPoints() : [];
-        const viewport = document.getElementById('camViewport');
-        const vRect = viewport.getBoundingClientRect();
-
-        if (pts && pts.length > 0) {
-          let sx = 0, sy = 0;
-          pts.forEach(p => { sx += p.getX(); sy += p.getY(); });
-          sx /= pts.length; sy /= pts.length;
-
-          // The video is object-fit:cover — compute the actual rendered area
-          const videoAspect = vw / vh;
-          const viewAspect  = vRect.width / vRect.height;
-          let renderW, renderH, offsetX = 0, offsetY = 0;
-          if (videoAspect > viewAspect) {
-            renderH = vRect.height;
-            renderW = renderH * videoAspect;
-            offsetX = (vRect.width - renderW) / 2;
-          } else {
-            renderW = vRect.width;
-            renderH = renderW / videoAspect;
-            offsetY = (vRect.height - renderH) / 2;
-          }
-
-          // Map video px → viewport px → fraction
-          barcodeScreenX = ((sx / vw) * renderW + offsetX) / vRect.width * 100;
-          barcodeScreenY = ((sy / vh) * renderH + offsetY) / vRect.height * 100;
-        } else {
-          barcodeScreenX = 50;
-          barcodeScreenY = 45;
-        }
-
-        onScan(result.getText(), result.getBarcodeFormat()?.toString() || 'Code');
-      }
-    } catch(_) { /* no barcode this frame */ }
-  }, 300);
-
-  window._zxingReader = zreader;
-}
-
-/* ══════════════════════════════════════════
-   CARD POSITION LOOP
-══════════════════════════════════════════ */
-function startCardLoop() {
-  if (cardAnimId) cancelAnimationFrame(cardAnimId);
-  const card    = document.getElementById('ar3DCard');
-  const viewport = document.getElementById('camViewport');
-
-  function update() {
-    if (cardVisible) {
-      const vRect = viewport.getBoundingClientRect();
-      const px = (barcodeScreenX / 100) * vRect.width;
-      const py = (barcodeScreenY / 100) * vRect.height;
-
-      // Clamp so the card doesn't overflow
-      const cardW = card.offsetWidth || 240;
-      const clampX = Math.min(Math.max(px, cardW / 2 + 8), vRect.width - cardW / 2 - 8);
-      const clampY = Math.min(Math.max(py, 80), vRect.height - 20);
-
-      card.style.left = clampX + 'px';
-      card.style.top  = clampY + 'px';
-    }
-    cardAnimId = requestAnimationFrame(update);
-  }
-  update();
-}
-
-/* ══════════════════════════════════════════
-   SCAN HANDLER
-══════════════════════════════════════════ */
-function onScan(code, fmt) {
-  if (!code || cooldown || code === lastCode) return;
-  lastCode = code;
-  cooldown = true;
-  setTimeout(() => { cooldown = false; }, 5000);
-
-  flash();
-  setS('found', fmt + ' found!');
-  document.getElementById('scanHint').textContent = '✓ ' + fmt + ': ' + code.slice(0, 22);
-  showToast('✓ Barcode detected — looking up FDA data…', 'ok');
-  lookup(code);
-}
-
-/* ══════════════════════════════════════════
-   TORCH + FLIP
-══════════════════════════════════════════ */
-async function toggleTorch() {
-  if (!activeStream) return;
-  const track = activeStream.getVideoTracks()[0];
-  const caps = track.getCapabilities?.() || {};
-  if (!caps.torch) { showToast('Torch not supported on this device', 'err'); return; }
-  torchOn = !torchOn;
-  try {
-    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
-    document.getElementById('torchBtn').classList.toggle('on', torchOn);
-  } catch(e) {
-    showToast('Could not toggle torch', 'err');
-  }
-}
-
-async function flipCam() {
-  if (activeStream) { activeStream.getTracks().forEach(t => t.stop()); activeStream = null; }
-  if (frameIntervalId) { clearInterval(frameIntervalId); frameIntervalId = null; }
-  if (cardAnimId) { cancelAnimationFrame(cardAnimId); cardAnimId = null; }
-  facing = facing === 'environment' ? 'user' : 'environment';
-  lastCode = ''; arStarted = false; torchOn = false;
-  document.getElementById('torchBtn').classList.remove('on');
-  hideAR3DCard();
-  document.getElementById('camPermPrompt').classList.remove('hidden');
-  document.getElementById('camPermPrompt').classList.add('hidden'); // skip prompt on flip
-  await startARCamera();
-}
-
-/* ══════════════════════════════════════════
-   IMAGE UPLOAD
-══════════════════════════════════════════ */
-const dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) handleImageFile(file);
-  else showToast('Please drop an image file', 'err');
-});
-
-async function handleImageFile(file) {
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  document.getElementById('previewImg').src = url;
-  document.getElementById('imgPreviewWrap').style.display = 'block';
-  document.getElementById('scanOverlay').classList.remove('hidden');
-  document.getElementById('previewResult').innerHTML = '';
-
-  try {
-    const code = await decodeImageBarcode(url);
-    document.getElementById('scanOverlay').classList.add('hidden');
-    if (code) {
-      document.getElementById('previewResult').innerHTML =
-        `<div class="pr-code">${code.text}</div><div class="pr-fmt">${code.fmt}</div>`;
-      flash();
-      showToast('✓ Barcode found! Looking up…', 'ok');
-      lookup(code.text);
-    } else {
-      document.getElementById('previewResult').innerHTML =
-        `<div class="pr-err">⚠ No barcode detected. Try a clearer photo or manual search 🔍</div>`;
-      showToast('No barcode detected in image', 'err');
-    }
-  } catch(e) {
-    document.getElementById('scanOverlay').classList.add('hidden');
-    document.getElementById('previewResult').innerHTML =
-      `<div class="pr-err">⚠ Decode error. Try a different image.</div>`;
-  }
-}
-
-function decodeImageBarcode(imageUrl) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.getElementById('decodeCanvas');
-      const scales = [1, 1.5, 2, 0.75];
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.DATA_MATRIX, ZXing.BarcodeFormat.QR_CODE,
-        ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E,
-        ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.PDF_417, ZXing.BarcodeFormat.AZTEC,
-      ]);
-      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-      const imgReader = new ZXing.BrowserMultiFormatReader(hints);
-      let result = null;
-
-      for (const scale of scales) {
-        try {
-          canvas.width  = Math.round(img.naturalWidth  * scale);
-          canvas.height = Math.round(img.naturalHeight * scale);
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const lum = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
-          const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-          result = imgReader.decodeBitmap(bmp);
-          if (result) break;
-        } catch(_) {}
-      }
-      imgReader.reset();
-      resolve(result ? { text: result.getText(), fmt: result.getBarcodeFormat()?.toString() || 'Code' } : null);
-    };
-    img.onerror = () => reject(new Error('Image load failed'));
-    img.src = imageUrl;
-  });
-}
-
-function clearImage() {
-  document.getElementById('imgPreviewWrap').style.display = 'none';
-  document.getElementById('previewImg').src = '';
-  document.getElementById('previewResult').innerHTML = '';
-  document.getElementById('imgFileInput').value = '';
-  document.getElementById('captureInput').value = '';
-  document.getElementById('scanOverlay').classList.remove('hidden');
-}
-
-/* ══════════════════════════════════════════
-   FDA LOOKUP
-══════════════════════════════════════════ */
-async function lookup(code) {
-  showLoad('Looking up ' + code.slice(0, 16) + '…');
-  const clean = code.replace(/^0+/, '').trim();
-  let drug = null;
-
-  const endpoints = [
-    `https://api.fda.gov/drug/label.json?search=openfda.upc:"${code}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search=openfda.package_ndc:"${clean}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search=openfda.upc:"${clean}"&limit=1`,
-    `https://api.fda.gov/drug/ndc.json?search=product_ndc:"${clean}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search="${clean}"&limit=1`,
-  ];
-
-  for (const u of endpoints) {
-    try {
-      const r = await fetch(u);
-      if (!r.ok) continue;
-      const d = await r.json();
-      if (d.results?.length) { drug = d.results[0]; break; }
-    } catch(_) {}
+  // Forgive
+  function forgive() {
+    document.getElementById('forgaveMsg').classList.add('show');
+    launchConfetti();
   }
 
-  if (!drug && isNaN(Number(code)) && code.length > 3) {
-    for (const u of [
-      `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(code)}"&limit=1`,
-      `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(code)}&limit=1`,
-    ]) {
-      try {
-        const r = await fetch(u);
-        if (!r.ok) continue;
-        const d = await r.json();
-        if (d.results?.length) { drug = d.results[0]; break; }
-      } catch(_) {}
+  // Confetti
+  function launchConfetti() {
+    const container = document.getElementById('confetti');
+    const colors = ['#ff6eb4','#ffb3d9','#d4aaff','#a8edcc','#ffe066','#ff9ecf','#c084fc'];
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.width = (8 + Math.random() * 10) + 'px';
+      c.style.height = (8 + Math.random() * 10) + 'px';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      c.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.style.animationDelay = Math.random() * 0.5 + 's';
+      container.appendChild(c);
+      setTimeout(() => c.remove(), 4500);
     }
   }
 
-  hideLoad();
-  if (drug) {
-    currentDrug = drug;
-    showAR3DCard(drug, code);
-    fillDetailDrawer(drug, code);
-  } else {
-    showToast('Not found in FDA database. Try manual search 🔍', 'err');
-    setS('scanning', 'Scanning…');
-    lastCode = '';
+  // Sticker pop
+  function popSticker(el) {
+    el.style.transform = 'scale(2) rotate(20deg)';
+    setTimeout(() => el.style.transform = '', 300);
   }
-}
-
-async function doSearch() {
-  const q = document.getElementById('sinput').value.trim();
-  if (!q) return;
-  showLoad('Searching "' + q + '"…');
-  let drug = null;
-  for (const u of [
-    `https://api.fda.gov/drug/label.json?search=openfda.brand_name:"${encodeURIComponent(q)}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search=openfda.generic_name:"${encodeURIComponent(q)}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search=openfda.substance_name:"${encodeURIComponent(q)}"&limit=1`,
-    `https://api.fda.gov/drug/label.json?search=${encodeURIComponent(q)}&limit=1`,
-  ]) {
-    try {
-      const r = await fetch(u);
-      if (!r.ok) continue;
-      const d = await r.json();
-      if (d.results?.length) { drug = d.results[0]; break; }
-    } catch(_) {}
-  }
-  hideLoad();
-  if (drug) {
-    currentDrug = drug;
-    barcodeScreenX = 50; barcodeScreenY = 45;
-    showAR3DCard(drug, q);
-    fillDetailDrawer(drug, q);
-    closeSearchDrawer();
-  } else {
-    showToast('No results. Try different spelling.', 'err');
-  }
-}
-
-/* ══════════════════════════════════════════
-   AR CARD
-══════════════════════════════════════════ */
-function showAR3DCard(drug, code) {
-  const f = drug.openfda || {};
-  const brand  = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown Medicine').toUpperCase();
-  const gen    = f.generic_name?.[0] || f.substance_name?.[0] || '';
-  const rxotc  = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
-  const route  = f.route?.[0] || '—';
-  const form   = f.dosage_form?.[0] || '—';
-  const purpose = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 120);
-  const warn   = drug.warnings?.[0] ? trunc(drug.warnings[0], 90) : null;
-
-  document.getElementById('ar3dBrand').textContent = brand;
-  document.getElementById('ar3dGen').textContent = (gen && gen.toUpperCase() !== brand) ? gen : '';
-  const badge = document.getElementById('ar3dBadge');
-  badge.textContent = rxotc;
-  badge.className = 'ar3d-badge ' + (rxotc === 'OTC' ? 'otc' : 'rx');
-  document.getElementById('ar3dRoute').textContent = route;
-  document.getElementById('ar3dForm').textContent = form;
-  document.getElementById('ar3dType').textContent = rxotc === 'OTC' ? 'Over Counter' : 'Prescription';
-  document.getElementById('ar3dPurpose').textContent = purpose;
-  document.getElementById('ar3dCode').textContent = code.slice(0, 18);
-
-  const warnEl = document.getElementById('ar3dWarn');
-  if (warn) {
-    document.getElementById('ar3dWarnTxt').textContent = warn;
-    warnEl.classList.add('show');
-  } else {
-    warnEl.classList.remove('show');
-  }
-
-  const card = document.getElementById('ar3DCard');
-  card.classList.add('show');
-  cardVisible = true;
-
-  // Save to history
-  hist = hist.filter(h => h.code !== String(code));
-  hist.unshift({ name: brand, code: String(code), gen });
-  if (hist.length > 6) hist.length = 6;
-  try { localStorage.setItem('mh3', JSON.stringify(hist)); } catch(_) {}
-  renderHist();
-
-  setS('found', 'Found ✓');
-  setTimeout(() => { if (currentMode === 'live') setS('scanning', 'Scanning…'); }, 7000);
-}
-
-function hideAR3DCard() {
-  document.getElementById('ar3DCard').classList.remove('show');
-  cardVisible = false;
-}
-
-/* ══════════════════════════════════════════
-   DETAIL DRAWER
-══════════════════════════════════════════ */
-function fillDetailDrawer(drug, code) {
-  const f = drug.openfda || {};
-  const brand  = (f.brand_name?.[0] || f.substance_name?.[0] || 'Unknown').toUpperCase();
-  const gen    = f.generic_name?.[0] || f.substance_name?.[0] || '';
-  const mfr    = f.manufacturer_name?.[0] || '—';
-  const rxotc  = (f.product_type?.[0]||'').toUpperCase().includes('OTC') ? 'OTC' : 'Rx';
-  const route  = f.route?.[0] || '—';
-  const form   = f.dosage_form?.[0] || '—';
-
-  document.getElementById('dname').textContent = brand;
-  document.getElementById('dgen').textContent = (gen && gen.toUpperCase() !== brand) ? gen : '';
-  setBadge('dbadge', rxotc);
-
-  const grid = [
-    { l: 'Manufacturer', v: mfr, c: '' },
-    { l: 'Route', v: route, c: 'c1' },
-    { l: 'Form', v: form, c: '' },
-    { l: 'Type', v: rxotc === 'OTC' ? 'Over the Counter' : 'Prescription', c: rxotc === 'OTC' ? 'c2' : 'c3' },
-  ];
-  if (f.pharm_class_epc?.[0]) grid.push({ l: 'Drug Class', v: f.pharm_class_epc[0], c: '' });
-  document.getElementById('ogrid').innerHTML = grid
-    .map(i => `<div class="ibox"><div class="ilbl">${i.l}</div><div class="ival ${i.c}">${i.v}</div></div>`)
-    .join('');
-
-  document.getElementById('purpose').textContent      = trunc(drug.purpose?.[0] || drug.indications_and_usage?.[0] || drug.description?.[0] || '—', 400);
-  document.getElementById('dosage').textContent        = trunc(drug.dosage_and_administration?.[0] || '—', 500);
-  document.getElementById('stopuse').textContent       = trunc(drug.stop_use?.[0] || 'Consult your doctor.', 300);
-  document.getElementById('interactions').textContent  = trunc(drug.drug_interactions?.[0] || '—', 500);
-  document.getElementById('askdoc').textContent        = trunc(drug.ask_doctor_or_pharmacist?.[0] || drug.ask_doctor?.[0] || 'Ask your doctor or pharmacist.', 300);
-
-  let wb = '';
-  if (drug.boxed_warning?.[0]) wb += `<div class="dbox"><div class="wico">☠️</div><div class="dtxt"><strong>BOXED WARNING:</strong> ${trunc(drug.boxed_warning[0], 300)}</div></div>`;
-  if (drug.warnings?.[0])      wb += `<div class="wbox"><div class="wico">⚠️</div><div class="wtxt">${trunc(drug.warnings[0], 400)}</div></div>`;
-  if (drug.contraindications?.[0]) wb += `<div class="slbl">Contraindications</div><div class="dbox"><div class="wico">🚫</div><div class="dtxt">${trunc(drug.contraindications[0], 300)}</div></div>`;
-  if (drug.adverse_reactions?.[0]) wb += `<div class="slbl">Side Effects</div><div class="prose">${trunc(drug.adverse_reactions[0], 400)}</div>`;
-  document.getElementById('wbody').innerHTML = wb || '<div class="prose" style="color:var(--muted)">No specific warnings listed.</div>';
-}
-
-function openDetailDrawer() {
-  document.getElementById('detailDrawer').classList.add('open');
-  document.getElementById('detailBackdrop').classList.add('show');
-  goTab('overview');
-}
-function closeDetailDrawer() {
-  document.getElementById('detailDrawer').classList.remove('open');
-  document.getElementById('detailBackdrop').classList.remove('show');
-}
-
-function openSearchDrawer() {
-  document.getElementById('searchBar').style.display = 'flex';
-  setTimeout(() => document.getElementById('sinput').focus(), 120);
-}
-function closeSearchDrawer() {
-  document.getElementById('searchBar').style.display = 'none';
-}
-
-/* ══════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════ */
-function goTab(name) {
-  const names = ['overview','dosage','warnings','interactions'];
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('p-' + name).classList.add('active');
-}
-function setBadge(id, v) {
-  const el = document.getElementById(id);
-  el.textContent = v; el.className = 'badge ' + (v === 'OTC' ? 'otc' : 'rx');
-}
-function setS(cls, txt) {
-  document.getElementById('dot').className = 'dot ' + cls;
-  document.getElementById('stxt').textContent = txt;
-}
-function showLoad(t) {
-  document.getElementById('ltxt').textContent = t;
-  document.getElementById('loadingOverlay').classList.add('show');
-}
-function hideLoad() {
-  document.getElementById('loadingOverlay').classList.remove('show');
-}
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 3800);
-}
-function flash() {
-  const f = document.getElementById('flash');
-  f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-}
-function trunc(s, n) {
-  if (!s) return '—';
-  s = s.replace(/\s+/g, ' ').trim();
-  return s.length > n ? s.slice(0, n) + '…' : s;
-}
-function renderHist() {
-  renderHistIn('histWrapLive');
-  renderHistIn('histWrapUpload');
-}
-function renderHistIn(id) {
-  const wrap = document.getElementById(id);
-  if (!wrap) return;
-  if (!hist.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  wrap.innerHTML = `
-    <div class="hlbl">Recent Scans</div>
-    ${hist.map(h => `
-      <div class="hitem" onclick="qs('${h.name}')">
-        <div><div class="hname">${h.name}</div><div class="hcode">${h.code}</div></div>
-        <div style="color:var(--muted);font-size:16px">›</div>
-      </div>`).join('')}
-  `;
-}
-function qs(name) {
-  document.getElementById('sinput').value = name;
-  openSearchDrawer();
-  doSearch();
-}
-
-renderHist();
 </script>
 </body>
 </html>
